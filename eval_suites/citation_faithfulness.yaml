@@ -1,0 +1,31 @@
+cases:
+  - id: cf_001
+    query: "Which companies disclosed customer-concentration risk?"
+  - id: cf_002
+    query: "What export-control exposure was cited for China?"
+  - id: cf_003
+    query: "Which firms mentioned advanced packaging capacity constraints?"
+  - id: cf_004
+    query: "Where is supply-chain concentration in Asia discussed?"
+  - id: cf_005
+    query: "Who relied on third-party wafer foundries and packaging partners?"
+  - id: cf_006
+    query: "Which filing mentions rare gases and substrates?"
+  - id: cf_007
+    query: "Which company mentioned lithography export controls?"
+  - id: cf_008
+    query: "What did Broadcom disclose about supplier concentration?"
+  - id: cf_009
+    query: "Where are customer inventories and memory demand cited?"
+  - id: cf_010
+    query: "Which filing cites Taiwan geopolitical risk?"
+  - id: cf_011
+    query: "Who disclosed sole-source suppliers for optics?"
+  - id: cf_012
+    query: "Which companies discuss China licensing requirements?"
+  - id: cf_013
+    query: "Which filing discusses customer capacity plans?"
+  - id: cf_014
+    query: "Who cited product launch delays by major customers?"
+  - id: cf_015
+    query: "Which filing mentions service obligations under China restrictions?"

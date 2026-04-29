@@ -1,0 +1,20 @@
+{
+  "ciks": [
+    {"cik": "0000320193", "name": "Apple Inc.", "ticker": "AAPL"},
+    {"cik": "0001045810", "name": "NVIDIA Corp", "ticker": "NVDA"},
+    {"cik": "0000006951", "name": "Applied Materials Inc.", "ticker": "AMAT"},
+    {"cik": "0000937966", "name": "ASML Holding NV", "ticker": "ASML"},
+    {"cik": "0000723125", "name": "Micron Technology Inc.", "ticker": "MU"},
+    {"cik": "0000050863", "name": "Intel Corp", "ticker": "INTC"},
+    {"cik": "0001730168", "name": "Broadcom Inc.", "ticker": "AVGO"},
+    {"cik": "0000707549", "name": "Lam Research Corp", "ticker": "LRCX"},
+    {
+      "cik": "0001046179",
+      "name": "Taiwan Semiconductor Manufacturing Co Ltd",
+      "ticker": "TSM"
+    },
+    {"cik": "0000319201", "name": "KLA Corp", "ticker": "KLAC"}
+  ],
+  "filing_types": ["10-K", "20-F", "10-Q"],
+  "max_per_cik": 2
+}

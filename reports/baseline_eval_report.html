@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Supplier Risk RAG Baseline Eval Report</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 2rem; color: #1f2328; }
+    table { border-collapse: collapse; width: 100%; }
+    th, td { border: 1px solid #d0d7de; padding: 0.5rem; text-align: left; }
+    th { background: #f6f8fa; }
+  </style>
+</head>
+<body>
+  <h1>Supplier Risk RAG Baseline Eval Report</h1>
+  <p>Deterministic CI run over the checked-in sample corpus. No API keys required.</p>
+  <table>
+    <thead>
+      <tr><th>Suite</th><th>Gate metric</th><th>Score</th><th>Threshold</th><th>Status</th></tr>
+    </thead>
+    <tbody>
+<tr><td>retrieval_quality</td><td>recall_at_5</td><td>1.000</td><td>0.700</td><td>pass</td></tr>
+<tr><td>citation_faithfulness</td><td>faithfulness</td><td>1.000</td><td>0.950</td><td>pass</td></tr>
+<tr><td>supplier_risk_questions</td><td>answer_quality</td><td>0.920</td><td>0.800</td><td>pass</td></tr>
+<tr><td>refusal_cases</td><td>refusal_precision</td><td>1.000</td><td>0.850</td><td>pass</td></tr>
+    </tbody>
+  </table>
+</body>
+</html>

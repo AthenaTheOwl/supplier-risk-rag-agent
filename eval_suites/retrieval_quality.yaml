@@ -1,0 +1,61 @@
+cases:
+  - id: rq_001
+    query: "Which companies disclosed customer-concentration risk?"
+    expected_accessions: ["0001045810-24-000029", "0001730168-24-000016", "0001046179-24-000019"]
+  - id: rq_002
+    query: "What export-control exposure was cited for China?"
+    expected_accessions: ["0001045810-24-000067", "0000006951-24-000043", "0000937966-24-000033"]
+  - id: rq_003
+    query: "Which firms mentioned advanced packaging capacity constraints?"
+    expected_accessions: ["0000050863-24-000010", "0001046179-24-000041"]
+  - id: rq_004
+    query: "Who described sole-source suppliers for specialized optics and precision stages?"
+    expected_accessions: ["0000319201-24-000058"]
+  - id: rq_005
+    query: "Which filings mention third-party foundries, assembly providers, or test subcontractors?"
+    expected_accessions: ["0001730168-24-000047", "0001045810-24-000029"]
+  - id: rq_006
+    query: "Where is Asia manufacturing interruption risk discussed?"
+    expected_accessions: ["0000320193-24-000081"]
+  - id: rq_007
+    query: "Which excerpt mentions memory demand and customer inventories?"
+    expected_accessions: ["0000723125-24-000021"]
+  - id: rq_008
+    query: "Which company cited lithography systems and China licensing restrictions?"
+    expected_accessions: ["0000937966-24-000033"]
+  - id: rq_009
+    query: "Which capital equipment suppliers disclosed cyclical demand and customer concentration?"
+    expected_accessions: ["0000707549-24-000018", "0000006951-24-000011", "0000319201-24-000025"]
+  - id: rq_010
+    query: "Which filing mentions Taiwan geopolitical risk, earthquakes, water shortages, and power interruptions?"
+    expected_accessions: ["0001046179-24-000019"]
+  - id: rq_011
+    query: "Where are data center product export restrictions discussed?"
+    expected_accessions: ["0001045810-24-000067"]
+  - id: rq_012
+    query: "Which equipment companies mentioned China licensing requirements?"
+    expected_accessions: ["0000006951-24-000043", "0000707549-24-000044", "0000937966-24-000033"]
+  - id: rq_013
+    query: "Which filing discusses foundry services, process nodes, and packaging ramps?"
+    expected_accessions: ["0000050863-24-000010"]
+  - id: rq_014
+    query: "Who described rare gases, substrates, chemicals, and wafer starts?"
+    expected_accessions: ["0000723125-24-000052"]
+  - id: rq_015
+    query: "Which company warned about delayed product launches by major customers?"
+    expected_accessions: ["0001730168-24-000016"]
+  - id: rq_016
+    query: "Where are iPhone, Mac, contract manufacturers, and supplier disruptions discussed?"
+    expected_accessions: ["0000320193-24-000081"]
+  - id: rq_017
+    query: "Which filing mentions customer capacity plans and backlog conversion?"
+    expected_accessions: ["0000937966-24-000014"]
+  - id: rq_018
+    query: "Which excerpts cite supplier concentration, quality failures, or shortages?"
+    expected_accessions: ["0001730168-24-000047", "0000319201-24-000058", "0000723125-24-000052"]
+  - id: rq_019
+    query: "Which risk factor links China restrictions to shipment timing and service obligations?"
+    expected_accessions: ["0000319201-24-000025"]
+  - id: rq_020
+    query: "Who discussed capacity allocation and supplier bottlenecks affecting customer delivery schedules?"
+    expected_accessions: ["0001046179-24-000041"]

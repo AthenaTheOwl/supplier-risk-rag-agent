@@ -1,0 +1,101 @@
+cases:
+  - id: sr_001
+    query: "Which companies disclosed customer-concentration risk?"
+    expected_accessions: ["0001045810-24-000029", "0001730168-24-000016"]
+    required_terms: ["customer"]
+  - id: sr_002
+    query: "What export-control exposure was cited for China?"
+    expected_accessions: ["0001045810-24-000067", "0000937966-24-000033"]
+    required_terms: ["export"]
+  - id: sr_003
+    query: "Which firms mentioned advanced packaging capacity constraints?"
+    expected_accessions: ["0000050863-24-000010", "0001046179-24-000041"]
+    required_terms: ["capacity"]
+  - id: sr_004
+    query: "Where did filings mention supplier concentration?"
+    expected_accessions: ["0001730168-24-000047", "0000319201-24-000058"]
+    required_terms: ["supplier"]
+  - id: sr_005
+    query: "Which companies mentioned limited-source or sole-source suppliers?"
+    expected_accessions: ["0000320193-24-000123", "0000319201-24-000058"]
+    required_terms: ["source"]
+  - id: sr_006
+    query: "Which filings discussed third-party foundries?"
+    expected_accessions: ["0001045810-24-000029", "0001730168-24-000047"]
+    required_terms: ["foundries"]
+  - id: sr_007
+    query: "Which company tied Taiwan risk to water shortages or power interruptions?"
+    expected_accessions: ["0001046179-24-000019"]
+    required_terms: ["taiwan"]
+  - id: sr_008
+    query: "Which filing discussed memory demand and customer inventories?"
+    expected_accessions: ["0000723125-24-000021"]
+    required_terms: ["memory"]
+  - id: sr_009
+    query: "Which equipment suppliers cited China licensing requirements?"
+    expected_accessions: ["0000006951-24-000043", "0000707549-24-000044"]
+    required_terms: ["licensing"]
+  - id: sr_010
+    query: "Who disclosed risks from rare gases and substrates?"
+    expected_accessions: ["0000723125-24-000052"]
+    required_terms: ["substrates"]
+  - id: sr_011
+    query: "Which supplier disclosed lithography system restrictions?"
+    expected_accessions: ["0000937966-24-000033"]
+    required_terms: ["lithography"]
+  - id: sr_012
+    query: "Which filing links delayed fab investments to customer concentration?"
+    expected_accessions: ["0000707549-24-000018"]
+    required_terms: ["customer"]
+  - id: sr_013
+    query: "Who mentioned backlog conversion and customer capacity plans?"
+    expected_accessions: ["0000937966-24-000014"]
+    required_terms: ["backlog"]
+  - id: sr_014
+    query: "Which company cited contract manufacturer disruptions?"
+    expected_accessions: ["0000320193-24-000081"]
+    required_terms: ["contract"]
+  - id: sr_015
+    query: "Which company cited delayed product launches by major customers?"
+    expected_accessions: ["0001730168-24-000016"]
+    required_terms: ["product launches"]
+  - id: sr_016
+    query: "Which company discussed process nodes and foundry services?"
+    expected_accessions: ["0000050863-24-000010"]
+    required_terms: ["foundry"]
+  - id: sr_017
+    query: "Which filing mentioned data center product restrictions?"
+    expected_accessions: ["0001045810-24-000067"]
+    required_terms: ["data center"]
+  - id: sr_018
+    query: "Which companies described customer concentration in semiconductor capital equipment?"
+    expected_accessions: ["0000006951-24-000011", "0000707549-24-000018"]
+    required_terms: ["customer"]
+  - id: sr_019
+    query: "Who linked supplier quality failures to shipment disruption?"
+    expected_accessions: ["0001730168-24-000047"]
+    required_terms: ["quality"]
+  - id: sr_020
+    query: "Which company cited production risk from specialized optics?"
+    expected_accessions: ["0000319201-24-000058"]
+    required_terms: ["optics"]
+  - id: sr_021
+    query: "Which filing discussed advanced packaging demand exceeding available capacity?"
+    expected_accessions: ["0001046179-24-000041"]
+    required_terms: ["advanced packaging"]
+  - id: sr_022
+    query: "Which companies cited service and support restrictions for China customers?"
+    expected_accessions: ["0000707549-24-000044", "0000319201-24-000025"]
+    required_terms: ["service"]
+  - id: sr_023
+    query: "Where did suppliers discuss logistics disruptions?"
+    expected_accessions: ["0000320193-24-000123", "0000723125-24-000052", "0000319201-24-000058"]
+    required_terms: ["logistics"]
+  - id: sr_024
+    query: "Which company warned that customer inventory reductions could reduce revenue?"
+    expected_accessions: ["0000723125-24-000021"]
+    required_terms: ["inventories"]
+  - id: sr_025
+    query: "Which filings mention trade restrictions changing customer demand?"
+    expected_accessions: ["0000050863-24-000038", "0000707549-24-000044"]
+    required_terms: ["trade"]
