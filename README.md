@@ -31,10 +31,10 @@ refused.
 Python 3.11, Anthropic SDK, OpenAI embeddings, Chroma, Streamlit, uv, pytest,
 and deterministic local evals.
 
-The default Anthropic model is `claude-sonnet-4-20250514`. Anthropic's official
-docs identify it as a Claude Sonnet 4 API model name; current deprecation docs
-list it as deprecated with retirement planned for June 15, 2026. This repo still
-pins it because the Worker 4 brief explicitly forbids `claude-sonnet-4-6`.
+The default Anthropic model is `claude-sonnet-4-6`, the active Claude Sonnet 4.6
+API ID in Anthropic's model overview. The older Sonnet 4 snapshot
+`claude-sonnet-4-20250514` is deprecated with retirement planned for June 15,
+2026, so this repo does not use it as the default.
 
 https://docs.anthropic.com/en/docs/about-claude/models/overview
 https://platform.claude.com/docs/en/about-claude/model-deprecations

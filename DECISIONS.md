@@ -2,11 +2,10 @@
 
 ## Anthropic model ID
 
-The repo defaults to `claude-sonnet-4-20250514` because the Worker 4 correction
-explicitly forbids `claude-sonnet-4-6`. Anthropic's official docs identify
-`claude-sonnet-4-20250514` as a Claude Sonnet 4 API model name; their current
-deprecation page lists it as deprecated on April 14, 2026, with retirement
-planned for June 15, 2026.
+The repo defaults to `claude-sonnet-4-6`, the active Claude Sonnet 4.6 API ID in
+Anthropic's model overview. The older Sonnet 4 snapshot
+`claude-sonnet-4-20250514` is deprecated and scheduled for retirement on June
+15, 2026, so it is documented only as a migration note.
 
 https://docs.anthropic.com/en/docs/about-claude/models/overview
 https://platform.claude.com/docs/en/about-claude/model-deprecations

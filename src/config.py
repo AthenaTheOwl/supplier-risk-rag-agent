@@ -9,7 +9,7 @@ from dataclasses import dataclass
 from dotenv import load_dotenv
 
 DEFAULT_PROVIDER = "anthropic"
-DEFAULT_ANTHROPIC_MODEL = "claude-sonnet-4-20250514"
+DEFAULT_ANTHROPIC_MODEL = "claude-sonnet-4-6"
 DEFAULT_OPENAI_CHAT_MODEL = "gpt-4o-mini"
 DEFAULT_EMBEDDING_MODEL = "text-embedding-3-small"
 
@@ -113,9 +113,9 @@ def get_cli_keys(
 def get_model_config() -> ModelConfig:
     """Return configured chat provider and model.
 
-    The default Anthropic model is pinned by the Worker 4 brief. Anthropic's official docs
-    identify this as a Sonnet 4 API model name, although current deprecation docs mark it
-    deprecated with retirement planned for June 15, 2026.
+    The default Anthropic model uses the active Claude Sonnet 4.6 API ID. The older
+    Sonnet 4 snapshot `claude-sonnet-4-20250514` is deprecated and scheduled for
+    retirement.
     """
 
     load_dotenv(override=False)
