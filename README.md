@@ -1,21 +1,21 @@
 # No. 13 - supplier-risk-rag-agent
 
-A supplier-risk RAG agent with receipts. SEC filing excerpts in, cited answers out.
-Retrieval quality, citation faithfulness, abstention behavior, and regression evals
-are wired into CI.
+A supplier-risk RAG agent with receipts. SEC filing excerpts in, cited answers
+out. Retrieval quality, citation faithfulness, abstention behavior, and
+regression evals are wired into CI.
 
-Demo: Streamlit URL to be added after deployment.
+demo: <streamlit URL once deployed>
 
-## Bring your own key
+## bring your own key
 
-The deployed demo runs on your API keys, not mine. Paste your Anthropic key into
-the sidebar when you want live Claude answer wording. The key lives only in your
-browser session and is never logged or stored. An OpenAI key is optional and is
-only needed for live embedding or ingestion experiments.
+The deployed demo runs on your API keys, not mine. Paste your Anthropic key
+into the sidebar when you want live Claude answer wording. The key lives in
+your browser session only — never logged, never stored. An OpenAI key is
+optional, and only needed for live embedding or ingestion experiments.
 
-Local `.env` fallback is disabled unless `STREAMLIT_LOCAL=1`.
+Local `.env` fallback is off unless `STREAMLIT_LOCAL=1`.
 
-## What it does
+## what it does
 
 Answers supplier-risk questions like:
 
@@ -23,23 +23,20 @@ Answers supplier-risk questions like:
 - "What export-control exposure was cited in 2024 filings?"
 - "Which firms mentioned advanced packaging capacity constraints?"
 
-Every claim has a verified citation. Unsupported or out-of-scope claims are
-refused.
+Every claim has a verified citation. Unsupported or out-of-scope claims get
+refused, not paraphrased.
 
-## Stack
+## stack
 
-Python 3.11, Anthropic SDK, OpenAI embeddings, Chroma, Streamlit, uv, pytest,
-and deterministic local evals.
+Python 3.11 · Anthropic SDK · OpenAI embeddings · Chroma · Streamlit · uv ·
+pytest · deterministic local evals.
 
-The default Anthropic model is `claude-sonnet-4-6`, the active Claude Sonnet 4.6
-API ID in Anthropic's model overview. The older Sonnet 4 snapshot
-`claude-sonnet-4-20250514` is deprecated with retirement planned for June 15,
-2026, so this repo does not use it as the default.
+Default Anthropic model is `claude-sonnet-4-6`. The older `claude-sonnet-4-20250514`
+snapshot is deprecated (retirement planned June 15, 2026), so it isn't the
+default here. See [models overview](https://docs.anthropic.com/en/docs/about-claude/models/overview)
+and [model deprecations](https://platform.claude.com/docs/en/about-claude/model-deprecations).
 
-https://docs.anthropic.com/en/docs/about-claude/models/overview
-https://platform.claude.com/docs/en/about-claude/model-deprecations
-
-## Local dev
+## local dev
 
 ```powershell
 python -m uv sync --all-groups
@@ -48,20 +45,21 @@ $env:STREAMLIT_LOCAL = "1"
 python -m uv run streamlit run app.py
 ```
 
-Plain `uv` also works when it is on PATH. On this machine, `python -m uv` is the
-reliable form.
+Plain `uv` also works when it's on PATH. On this machine, `python -m uv` is
+the reliable form.
 
-## Evals
+## evals
 
 ```powershell
 python -m uv run python -m src.evals.runner --suite all --report reports/local_run.html
 ```
 
-CI evals do not need real API keys. They run against the checked-in sample
-corpus with deterministic local retrieval, citation validation, refusal checks,
-and a regression-quality proxy. Live LLM calls are optional for demo use.
+CI evals don't need real API keys. They run against the checked-in sample
+corpus with deterministic local retrieval, citation validation, refusal
+checks, and a regression-quality proxy. Live LLM calls are optional, for
+demo use.
 
-## Ingestion
+## ingestion
 
 The checked-in sample corpus is enough for local demos and CI. Full EDGAR
 metadata fetches are gated behind `--full-fetch` and use a custom SEC
