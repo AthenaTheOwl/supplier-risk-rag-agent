@@ -1,0 +1,39 @@
+{
+  "config": {
+    "suite": "all",
+    "reranker": null,
+    "candidate_pool": null
+  },
+  "results": {
+    "retrieval_quality": {
+      "recall_at_5": 1.0,
+      "mrr": 1.0,
+      "total": 20,
+      "gate_metric": "recall_at_5",
+      "threshold": 0.7,
+      "passed": true
+    },
+    "citation_faithfulness": {
+      "faithfulness": 1.0,
+      "answered_rate": 1.0,
+      "total": 15,
+      "gate_metric": "faithfulness",
+      "threshold": 0.95,
+      "passed": true
+    },
+    "supplier_risk_questions": {
+      "answer_quality": 0.92,
+      "total": 25,
+      "gate_metric": "answer_quality",
+      "threshold": 0.8,
+      "passed": true
+    },
+    "refusal_cases": {
+      "refusal_precision": 1.0,
+      "total": 10,
+      "gate_metric": "refusal_precision",
+      "threshold": 0.85,
+      "passed": true
+    }
+  }
+}

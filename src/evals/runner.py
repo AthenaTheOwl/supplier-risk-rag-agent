@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 from dataclasses import asdict
 from pathlib import Path
 from typing import Any
@@ -110,12 +111,42 @@ def build_parser() -> argparse.ArgumentParser:
         help="Eval suite to run.",
     )
     parser.add_argument("--report", default=None, help="Optional HTML report path.")
+    parser.add_argument(
+        "--json",
+        dest="json_path",
+        default=None,
+        help="Optional JSON metrics output path (for experiment tracking).",
+    )
+    parser.add_argument(
+        "--reranker",
+        default=None,
+        help=(
+            "Optional cross-encoder model name to use as reranker. "
+            "Examples: cross-encoder/ms-marco-MiniLM-L-6-v2, BAAI/bge-reranker-base. "
+            "Off by default; baseline CI runs without reranking."
+        ),
+    )
+    parser.add_argument(
+        "--candidate-pool",
+        type=int,
+        default=50,
+        help="When --reranker is set, retrieve this many candidates before reranking.",
+    )
     return parser
 
 
 def main() -> None:
     args = build_parser().parse_args()
-    ranker = HybridRanker(load_sample_corpus(_repo_root()))
+    reranker = None
+    if args.reranker:
+        from src.retrieval.reranker import CrossEncoderReranker
+
+        reranker = CrossEncoderReranker(model_name=args.reranker)
+    ranker = HybridRanker(
+        load_sample_corpus(_repo_root()),
+        reranker=reranker,
+        candidate_pool=args.candidate_pool,
+    )
     agent = SupplierRiskAgent(ranker)
     suite_names = list(GATES.keys()) if args.suite == "all" else [args.suite]
     results = {name: _evaluate_suite(name, ranker, agent) for name in suite_names}
@@ -139,6 +170,19 @@ def main() -> None:
 
     if args.report:
         _write_html_report(Path(args.report), results)
+
+    if args.json_path:
+        json_path = Path(args.json_path)
+        json_path.parent.mkdir(parents=True, exist_ok=True)
+        payload: dict[str, Any] = {
+            "config": {
+                "suite": args.suite,
+                "reranker": args.reranker,
+                "candidate_pool": args.candidate_pool if args.reranker else None,
+            },
+            "results": results,
+        }
+        json_path.write_text(json.dumps(payload, indent=2, default=float), encoding="utf-8")
 
     failed = [name for name, metrics in results.items() if not metrics["passed"]]
     if failed:

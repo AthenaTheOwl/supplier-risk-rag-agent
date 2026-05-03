@@ -69,3 +69,19 @@ metadata fetches are gated behind `--full-fetch` and use a custom SEC
 python -m uv run python -m src.ingest.run_ingest
 python -m uv run python -m src.ingest.run_ingest --full-fetch
 ```
+
+## experiments
+
+Retrieval and agent variants the production pipeline doesn't ship live in
+[`experiments/`](./experiments/). Each is a self-contained ablation against
+the same eval suites the prod pipeline uses, with `baseline.json` and
+`variant.json` plus a `notes.md` documenting the decision.
+
+- [01-cross-encoder-rerank](./experiments/01-cross-encoder-rerank/) —
+  added a learned cross-encoder on top of the deterministic hybrid ranker.
+  **Reverted.** Recall@5 was already saturated on the sample corpus, and
+  the reranker reordered candidates in ways that broke downstream span
+  verification. Faithfulness regressed 1.000 → 0.933, failing the CI gate.
+
+The pattern is: one variable changed, deltas measured, decision recorded.
+Negative results stay documented rather than deleted.

@@ -34,6 +34,9 @@ dev = [
     "pytest-cov>=5.0.0",
     "ruff>=0.7.0",
 ]
+experiments = [
+    "sentence-transformers>=3.0.0",
+]
 
 [tool.uv]
 package = true

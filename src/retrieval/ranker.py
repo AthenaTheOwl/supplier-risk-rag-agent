@@ -6,11 +6,14 @@ import math
 import re
 from collections.abc import Iterable
 from dataclasses import dataclass
-from typing import Protocol
+from typing import TYPE_CHECKING, Protocol
 
 from rank_bm25 import BM25Okapi
 
 from src.retrieval.index import DocumentChunk, load_sample_corpus
+
+if TYPE_CHECKING:
+    from src.retrieval.reranker import RerankerLike
 
 TOKEN_RE = re.compile(r"[a-z0-9]{2,}")
 
@@ -94,6 +97,8 @@ class HybridRanker:
         self,
         chunks: Iterable[DocumentChunk],
         embedder: EmbedderLike | None = None,
+        reranker: RerankerLike | None = None,
+        candidate_pool: int = 50,
     ) -> None:
         from src.retrieval.embedder import HashingEmbedder
 
@@ -103,6 +108,8 @@ class HybridRanker:
         self._bm25 = BM25Okapi(self._tokenized_docs) if self._tokenized_docs else None
         self._embedder = embedder or HashingEmbedder()
         self._doc_vectors = self._embedder.embed_texts([chunk.text for chunk in self.chunks])
+        self._reranker = reranker
+        self._candidate_pool = candidate_pool
 
     @classmethod
     def from_sample_corpus(cls) -> HybridRanker:
@@ -147,7 +154,13 @@ class HybridRanker:
                 )
             )
 
-        return sorted(results, key=lambda result: result.score, reverse=True)[:top_k]
+        sorted_results = sorted(results, key=lambda result: result.score, reverse=True)
+        if self._reranker is None:
+            return sorted_results[:top_k]
+        # Pull a wider candidate pool for the reranker. The pool size is bounded
+        # to avoid wasting cross-encoder calls on clearly-irrelevant chunks.
+        pool = sorted_results[: max(self._candidate_pool, top_k)]
+        return self._reranker.rerank(query, pool, top_k)
 
     @staticmethod
     def _matches_filters(chunk: DocumentChunk, filters: dict[str, object]) -> bool:
