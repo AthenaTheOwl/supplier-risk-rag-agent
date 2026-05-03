@@ -4,7 +4,7 @@ A supplier-risk RAG agent with receipts. SEC filing excerpts in, cited answers
 out. Retrieval quality, citation faithfulness, abstention behavior, and
 regression evals are wired into CI.
 
-demo: <streamlit URL once deployed>
+demo: https://supplier-risk-rag-agent.streamlit.app
 
 ## bring your own key
 
