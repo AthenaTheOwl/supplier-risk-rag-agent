@@ -1,0 +1,46 @@
+# State machine for a single agent run's lifecycle.
+#
+# A run is one role invocation (e.g. the proof-gate-runner taking a
+# patch through the eval and gate suites).
+
+id: run-lifecycle
+version: 0.1.0
+
+states:
+  - id: queued
+    description: Run accepted; inputs pinned; not yet started.
+  - id: in_progress
+    description: Role is actively producing outputs.
+  - id: awaiting_gate
+    description: Role finished; gates are still running.
+  - id: awaiting_approval
+    description: Output requires human or peer-role approval.
+  - id: completed
+    description: All required gates passed; outputs accepted.
+  - id: failed
+    description: At least one blocking gate failed; run rolled back.
+  - id: escalated
+    description: Escalation condition fired; another role took over.
+
+transitions:
+  - from: queued
+    to: in_progress
+    gate: inputs_ready
+  - from: in_progress
+    to: awaiting_gate
+    gate: outputs_emitted
+  - from: awaiting_gate
+    to: awaiting_approval
+    gate: gates_passing
+  - from: awaiting_gate
+    to: failed
+    gate: gate_blocking_fail
+  - from: awaiting_approval
+    to: completed
+    gate: approval_granted
+  - from: awaiting_approval
+    to: escalated
+    gate: escalation_condition_fired
+  - from: failed
+    to: in_progress
+    gate: retry_initiated

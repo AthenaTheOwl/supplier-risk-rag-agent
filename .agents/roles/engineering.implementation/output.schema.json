@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://supplier-risk-rag-agent.local/roles/engineering.implementation/output.schema.json",
+  "title": "ImplementationOutput",
+  "description": "Code patch artifact the implementation role emits per change.",
+  "type": "object",
+  "required": ["requirement", "files_changed", "tests_added", "gates"],
+  "additionalProperties": false,
+  "properties": {
+    "requirement": {
+      "type": "string",
+      "pattern": "^R-[A-Z]+-\\d{3,}$"
+    },
+    "files_changed": {
+      "type": "array",
+      "items": {"type": "string"},
+      "minItems": 1
+    },
+    "tests_added": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "gates": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["pytest", "spec_check"],
+      "properties": {
+        "pytest": {"type": "string", "enum": ["passing", "failing", "skipped"]},
+        "spec_check": {"type": "string", "enum": ["passing", "failing"]},
+        "voice_lint": {"type": "string", "enum": ["passing", "failing", "n/a"]},
+        "eval_runner": {"type": "string", "enum": ["passing", "failing", "skipped"]}
+      }
+    },
+    "eval_report_path": {
+      "type": "string",
+      "description": "Pointer to the eval result update when the change edits prompts or model id."
+    }
+  }
+}

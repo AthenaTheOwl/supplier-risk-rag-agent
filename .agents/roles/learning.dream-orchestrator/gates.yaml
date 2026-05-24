@@ -1,0 +1,17 @@
+required_gates:
+  - id: voice_lint
+    script: scripts/voice_lint.py
+    blocking: true
+    note: |
+      Runs against dreams/YYYY-WNN/report.md before the dream
+      output is handed to a human reviewer.
+
+planned_gates:
+  - id: validate_dreams
+    script: scripts/validate_dreams.py
+    blocking: true
+    status: planned
+    note: |
+      Lands when the first dreams/<week>/output.json file lands in
+      a future commit. The script validates against the cross-repo
+      dream-output.schema.json from athena-site.

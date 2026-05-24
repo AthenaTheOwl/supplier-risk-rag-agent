@@ -1,0 +1,23 @@
+id: reviewer-cannot-edit-code
+applies_to:
+  roles:
+    - engineering.code-reviewer
+  tools:
+    - repo.apply_patch
+  actions:
+    - modify_code
+    - modify_prompts
+decision: deny
+conditions: []
+priority: 100
+description: |
+  The code-reviewer role is read-only on code. It may run tests and
+  the governance gates, but it may never edit a file. Reviews land
+  as a review_artifact, not as a fix-up commit.
+rationale: |
+  Reviewer-as-author destroys the independent review signal. If the
+  reviewer wants the code changed, the request goes back to
+  engineering.implementation. The role.yaml permission flag
+  write_code: false is the first cut; this policy is the
+  defense-in-depth deny.
+owner: platform

@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://supplier-risk-rag-agent.local/roles/control.coordinator/output.schema.json",
+  "title": "ControlCoordinatorOutput",
+  "description": "Routing decision the coordinator emits per change request. Names the active spec, the routed role per step, and the gate status.",
+  "type": "object",
+  "required": ["change_id", "spec", "steps", "gate_status"],
+  "additionalProperties": false,
+  "properties": {
+    "change_id": {
+      "type": "string",
+      "description": "Short slug identifying the change request."
+    },
+    "spec": {
+      "type": "string",
+      "description": "Path to the owning spec ledger directory."
+    },
+    "steps": {
+      "type": "array",
+      "description": "Ordered routing decisions per workflow step.",
+      "items": {
+        "type": "object",
+        "required": ["step", "role"],
+        "additionalProperties": false,
+        "properties": {
+          "step": {"type": "string"},
+          "role": {"type": "string", "pattern": "^[a-z][a-z0-9_]*\\.[a-z][a-z0-9_-]*$"},
+          "status": {"type": "string", "enum": ["pending", "in_progress", "done", "blocked"]}
+        }
+      }
+    },
+    "gate_status": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["spec_check", "voice_lint", "validate_decisions"],
+      "properties": {
+        "spec_check": {"type": "string", "enum": ["pending", "passing", "failing"]},
+        "voice_lint": {"type": "string", "enum": ["pending", "passing", "failing"]},
+        "validate_decisions": {"type": "string", "enum": ["pending", "passing", "failing"]},
+        "validate_roles": {"type": "string", "enum": ["pending", "passing", "failing"]},
+        "validate_tools": {"type": "string", "enum": ["pending", "passing", "failing"]},
+        "validate_policies": {"type": "string", "enum": ["pending", "passing", "failing"]}
+      }
+    },
+    "release_ref": {
+      "type": "string",
+      "description": "Pointer to the ops/RELEASE_LEDGER.md entry once the change merges."
+    }
+  }
+}

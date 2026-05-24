@@ -1,0 +1,4 @@
+allowed_tools:
+  - repo.read
+  - dream.read_recent_commits
+  - dream.write_candidate

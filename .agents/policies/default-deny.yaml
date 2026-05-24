@@ -1,0 +1,19 @@
+id: default-deny
+applies_to:
+  roles: ["*"]
+  tools: ["*"]
+  actions: ["*"]
+decision: deny
+conditions: []
+priority: 0
+description: |
+  Baseline deny rule. Anything not explicitly allowed by a
+  higher-priority policy is denied. This is the floor the policy
+  engine starts from; every other policy is an explicit allow or
+  require_approval at higher priority.
+rationale: |
+  Default-deny is the recommended baseline per the cross-repo policy
+  schema. It forces every grant to be explicit, which makes the
+  policy file readable as a list of what the system permits rather
+  than as a list of edge cases the engine forbids.
+owner: platform

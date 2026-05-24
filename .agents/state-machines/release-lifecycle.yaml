@@ -1,0 +1,29 @@
+# State machine for a release's lifecycle.
+#
+# A release is one commit on main that represents shippable scope
+# and earns an entry in ops/RELEASE_LEDGER.md.
+
+id: release-lifecycle
+version: 0.1.0
+
+states:
+  - id: candidate
+    description: |
+      Code patch passing gates locally but not yet pushed to main.
+  - id: shipped
+    description: |
+      Commit on main; gates green in CI; ops/RELEASE_LEDGER.md
+      carries the entry; Streamlit Cloud has picked up the change
+      on its own cadence.
+  - id: rolled_back
+    description: |
+      Release reverted via revert commit or force-push;
+      ops/RESET_LEDGER.md carries the entry in the same push.
+
+transitions:
+  - from: candidate
+    to: shipped
+    gate: pushed_to_main_with_ledger_entry
+  - from: shipped
+    to: rolled_back
+    gate: rollback_initiated_with_reset_ledger_entry

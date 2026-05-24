@@ -1,0 +1,11 @@
+allowed_tools:
+  - repo.read
+  - repo.apply_patch
+  - tests.run
+  - gates.run_voice_lint
+  - gates.run_spec_check
+  - eval.run_recall_at_5
+  - eval.run_citation_faithfulness
+  - eval.run_abstention
+  - eval.run_refusal
+  - streamlit.local_run

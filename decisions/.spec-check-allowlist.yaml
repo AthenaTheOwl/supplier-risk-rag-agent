@@ -1,0 +1,28 @@
+# spec-check allowlist for deferred decision backfills.
+#
+# Every R-* requirement defined in specs/NNNN-*/requirements.md must
+# carry at least one decisions/DEC-*.md file whose front-matter
+# `requirement:` field names that ID. R-* IDs listed below under
+# `deferred:` are deferred backfills: the requirements shipped before
+# the matching DEC file landed; the DEC lands in a later pass.
+#
+# Format: a YAML list of R-* IDs under the `deferred` key. Each entry
+# carries a short note for context.
+#
+# Removing an entry from this list requires landing the matching DEC
+# in the same commit.
+#
+# `roles_deferred:` lists role IDs that should appear as `owner_role`
+# in spec traceability tables but were left blank in spec 0001 because
+# the role itself was deferred. This block is informational; the
+# spec_check gate does not currently enforce it. When the matching
+# role lands, remove the entry here and add the owner_role link in
+# traceability.md.
+
+deferred: []
+
+roles_deferred:
+  # No role-owner gaps in spec 0001: every R-CDCP-* requirement names
+  # an owner role from the six core roles installed in this pass.
+  # Add entries here when a future spec names a role that has not yet
+  # been registered under .agents/roles/.

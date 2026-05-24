@@ -1,0 +1,81 @@
+# .agents/workflows/single-change.yaml
+#
+# Declarative workflow declaration mirroring the codex pattern. Names
+# the steps a single change moves through, from intake to release.
+# This YAML is documentation, not execution code; the gates and the
+# agents read it to know what shape a change takes.
+
+id: single-change
+version: 0.1.0
+owner_guild: control
+description: |
+  The steps a single supplier-risk-rag-agent change moves through.
+  Each step names the role responsible, the output it produces, and
+  the status semantics the step uses to signal handoff.
+
+steps:
+  - id: intake
+    role: control.coordinator
+    output_type: backlog_item
+    status_semantics:
+      - proposed: a human or dream candidate filed the change
+      - triaged: routing decision drafted
+      - dropped: the item does not warrant work right now
+
+  - id: spec
+    role: product.spec-writer
+    output_type: spec
+    status_semantics:
+      - drafted: requirements.md and traceability.md exist
+      - approved: design.md and acceptance.md pass spec_check
+
+  - id: architecture
+    role: product.spec-writer
+    output_type: decision_memo
+    status_semantics:
+      - proposed: DEC file lands with alternatives and rationale
+      - approved: DEC file passes validate_decisions
+
+  - id: implementation
+    role: engineering.implementation
+    output_type: patch
+    status_semantics:
+      - drafted: code lands behind a feature flag or in a branch
+      - merged: code reaches main
+
+  - id: code_review
+    role: engineering.code-reviewer
+    output_type: review
+    status_semantics:
+      - requested: review asked of a human or peer agent
+      - approved: review passes
+      - changes_requested: review flags concerns
+
+  - id: tests
+    role: engineering.implementation
+    output_type: test_report
+    status_semantics:
+      - drafted: test cases exist
+      - passing: pytest suite green at 70% coverage floor
+
+  - id: proof_gates
+    role: science.proof-gate-runner
+    output_type: eval_report
+    status_semantics:
+      - running: CI in progress
+      - passing: six python gates plus pytest plus eval runner pass
+      - failing: at least one gate failed; merge blocked
+
+  - id: human_approval
+    role: control.coordinator
+    output_type: review
+    status_semantics:
+      - pending: no human sign-off yet
+      - approved: human signed off
+
+  - id: release
+    role: control.coordinator
+    output_type: release_note
+    status_semantics:
+      - shipped: release lands on main with an entry in ops/RELEASE_LEDGER.md
+      - rolled_back: release reverted; entry lands in ops/RESET_LEDGER.md

@@ -1,0 +1,33 @@
+id: eval-suite-required-before-prompt-change
+applies_to:
+  roles:
+    - engineering.implementation
+  tools:
+    - repo.apply_patch
+  actions:
+    - modify_prompts
+    - modify_model_id
+    - modify_retrieval
+decision: require_approval
+conditions:
+  - field: request.path
+    op: matches
+    value: ^src/agent/prompts/.*
+  - field: request.eval_report_path
+    op: eq
+    value: ""
+priority: 110
+description: |
+  A change to src/agent/prompts/, to the default model id in
+  src/config.py, or to src/retrieval/ must land alongside a paired
+  eval result update (a report under reports/ or an experiments/NN-*/
+  folder). The policy engine routes the request to the approval
+  queue if the eval_report_path is empty.
+rationale: |
+  Prompt drift, model drift, and retrieval drift silently change
+  answer quality. The cross-encoder reranker experiment dropped
+  citation faithfulness from 1.000 to 0.933 before the eval suite
+  caught it; the precedent is the load-bearing argument for making
+  the coupling structural. Repo-specific rule for this RAG agent;
+  may not apply to non-LLM repos in the portfolio.
+owner: platform

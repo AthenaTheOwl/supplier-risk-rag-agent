@@ -1,0 +1,30 @@
+required_gates:
+  - id: spec_check
+    script: scripts/spec_check.py
+    blocking: true
+  - id: voice_lint
+    script: scripts/voice_lint.py
+    blocking: true
+  - id: validate_decisions
+    script: scripts/validate_decisions.py
+    blocking: true
+  - id: validate_roles
+    script: scripts/validate_roles.py
+    blocking: true
+  - id: validate_tools
+    script: scripts/validate_tools.py
+    blocking: true
+  - id: validate_policies
+    script: scripts/validate_policies.py
+    blocking: true
+  - id: pytest
+    script: uv run pytest --cov=src --cov-fail-under=70
+    blocking: true
+  - id: eval_runner
+    script: uv run python -m src.evals.runner --suite all
+    blocking: true
+    note: |
+      A regression on any of the four scoring axes (recall@5,
+      citation faithfulness, abstention precision, refusal
+      correctness) is a blocking finding. Faithfulness must hold
+      at 1.000 against the sample corpus.

@@ -1,0 +1,77 @@
+# .agents/workflows/prompt-or-model-change.yaml
+#
+# Repo-specific workflow that fires when the change touches
+# src/agent/prompts/, the default model id in src/config.py, or
+# src/retrieval/. Triggers the eval suite as a hard gate before the
+# change reaches main. Mirrors the R-EXT-011-style coupling pattern
+# from ai-field-brief.
+
+id: prompt-or-model-change
+version: 0.1.0
+owner_guild: science
+description: |
+  The steps a prompt or model or retrieval change moves through.
+  The eval-suite-required-before-prompt-change policy enforces the
+  paired eval result rule; this workflow names the steps.
+
+trigger:
+  - path_modified: src/agent/prompts/
+  - path_modified: src/config.py
+  - path_modified: src/retrieval/
+  - path_modified: src/agent/answerer.py
+
+steps:
+  - id: baseline_capture
+    role: science.proof-gate-runner
+    output_type: eval_report
+    status_semantics:
+      - pending: baseline report not yet captured
+      - captured: reports/baseline.json or reports/local_run.html exists for the prior green commit
+
+  - id: change_lands
+    role: engineering.implementation
+    output_type: patch
+    status_semantics:
+      - drafted: prompt or model or retrieval change made
+      - lint_clean: voice_lint + spec_check exit 0
+
+  - id: variant_eval
+    role: science.proof-gate-runner
+    output_type: eval_report
+    status_semantics:
+      - pending: variant eval not yet run
+      - completed: reports/variant.json exists with per-suite scores
+
+  - id: compare_deltas
+    role: science.proof-gate-runner
+    output_type: eval_report
+    status_semantics:
+      - pending: deltas not yet computed
+      - regression: at least one of the four axes regressed; merge blocked
+      - hold: faithfulness held at 1.000 and other axes within tolerance; merge allowed
+
+  - id: record_decision
+    role: product.spec-writer
+    output_type: decision_memo
+    status_semantics:
+      - drafted: DEC file lands naming the prompt or model change and the eval deltas
+      - approved: validate_decisions exits 0
+
+  - id: merge_or_revert
+    role: control.coordinator
+    output_type: release_note
+    status_semantics:
+      - merged: change reaches main; ops/RELEASE_LEDGER.md carries the entry
+      - reverted: change rolled back; the experiment folder records the negative result
+    note: |
+      The 01-cross-encoder-rerank experiment is the precedent for a
+      reverted change: faithfulness regressed 1.000 -> 0.933, the
+      eval gate caught the regression, the change rolled back, and
+      the experiment folder kept the negative result.
+
+post_conditions:
+  - rule: faithfulness_floor
+    description: |
+      Citation faithfulness must hold at 1.000 against the sample
+      corpus. A drop below 1.000 is a hard merge block; no policy
+      override is available.

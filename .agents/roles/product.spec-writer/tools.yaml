@@ -1,0 +1,5 @@
+allowed_tools:
+  - repo.read
+  - repo.apply_patch
+  - gates.run_voice_lint
+  - gates.run_spec_check

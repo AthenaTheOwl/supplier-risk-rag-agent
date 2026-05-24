@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://supplier-risk-rag-agent.local/roles/engineering.code-reviewer/output.schema.json",
+  "title": "CodeReviewOutput",
+  "description": "Review artifact the code-reviewer emits per diff.",
+  "type": "object",
+  "required": ["change_id", "decision", "comments"],
+  "additionalProperties": false,
+  "properties": {
+    "change_id": {"type": "string"},
+    "decision": {
+      "type": "string",
+      "enum": ["approved", "changes_requested", "blocked"]
+    },
+    "comments": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["file", "line", "severity", "message"],
+        "additionalProperties": false,
+        "properties": {
+          "file": {"type": "string"},
+          "line": {"type": "integer", "minimum": 0},
+          "severity": {"type": "string", "enum": ["info", "suggestion", "blocker"]},
+          "message": {"type": "string"}
+        }
+      }
+    },
+    "eval_report_seen": {
+      "type": "boolean",
+      "description": "True if the diff touched prompts or model id and the reviewer confirmed the paired eval report exists."
+    }
+  }
+}

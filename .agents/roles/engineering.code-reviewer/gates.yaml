@@ -1,0 +1,13 @@
+required_gates:
+  - id: spec_check
+    script: scripts/spec_check.py
+    blocking: true
+  - id: validate_decisions
+    script: scripts/validate_decisions.py
+    blocking: true
+  - id: pytest
+    script: uv run pytest --cov=src --cov-fail-under=70
+    blocking: true
+    note: |
+      The reviewer reruns pytest locally as a cross-check on the
+      implementation role's local run. CI reruns the same suite.

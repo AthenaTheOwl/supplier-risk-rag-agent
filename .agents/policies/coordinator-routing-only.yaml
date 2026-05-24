@@ -1,0 +1,24 @@
+id: coordinator-routing-only
+applies_to:
+  roles:
+    - control.coordinator
+  tools:
+    - repo.apply_patch
+    - tests.run
+  actions:
+    - modify_code
+    - modify_prompts
+decision: deny
+conditions: []
+priority: 100
+description: |
+  The coordinator role is read-and-route-only. It may invoke
+  read-only and gate-running tools but never the repo.apply_patch
+  tool or any action that modifies code.
+rationale: |
+  Routing is the work. The coordinator's accountability would
+  collapse if it could also land the code it routed; the diff would
+  carry no independent review. The reviewer-cannot-edit-code policy
+  pairs with this one to keep the coordinator and reviewer roles
+  strictly read-and-judge.
+owner: platform

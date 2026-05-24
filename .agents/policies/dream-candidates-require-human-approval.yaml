@@ -1,0 +1,28 @@
+id: dream-candidates-require-human-approval
+applies_to:
+  roles:
+    - learning.dream-orchestrator
+  tools:
+    - dream.write_candidate
+    - repo.apply_patch
+  actions:
+    - auto_apply_dream_candidate
+decision: require_approval
+conditions:
+  - field: request.candidate.human_review_required
+    op: ne
+    value: false
+priority: 90
+description: |
+  Every dream candidate (memory_update, test_generation,
+  skill_patch, backlog_item) must hold behind human review. The
+  orchestrator may write the candidate to dreams/<week>/output.json,
+  but no automated path may apply it as a code or memory edit.
+rationale: |
+  Dream candidates come from offline cognition over recent runs;
+  they are hypotheses, not decisions. The human-gate rule is the
+  structural answer to the auto-apply temptation. The cross-repo
+  dream-output.schema.json sets human_review_required: true as the
+  default; this policy enforces the same rule at the policy-engine
+  layer.
+owner: platform

@@ -6,6 +6,37 @@ regression evals are wired into CI.
 
 demo: https://supplier-risk-rag-agent.streamlit.app
 
+## governance
+
+This repo runs under the Cognitive Delivery Control Plane (CDCP). The
+six artifact types live under:
+
+- [`specs/`](./specs/) — six-file spec ledgers; spec 0001 installs the
+  CDCP scaffold itself.
+- [`decisions/`](./decisions/) — per-requirement DEC files validated
+  against the cross-repo `decision.schema.json`.
+- [`dreams/`](./dreams/) — weekly offline-cognition outputs;
+  human-gated promotion candidates.
+- [`.agents/AGENTS.md`](./.agents/AGENTS.md) — the contract a coding
+  agent reads first; six role contracts, a tool registry, and six
+  policy files live under `.agents/`.
+- [`ops/RELEASE_LEDGER.md`](./ops/RELEASE_LEDGER.md) — one entry per
+  shipped commit, with proof refs.
+- [`ops/RESET_LEDGER.md`](./ops/RESET_LEDGER.md) — one entry per
+  force-push or rollback, in the same push.
+
+The cross-repo CDCP charter lives at
+[`athena-site/ops/control-plane.md`](https://github.com/AthenaTheOwl/athena-site/blob/main/ops/control-plane.md).
+The schema set at
+[`athena-site/ops/schemas/`](https://github.com/AthenaTheOwl/athena-site/tree/main/ops/schemas)
+is the source of truth; this repo keeps cache copies under
+`ops/schemas-cache/` for offline CI.
+
+Six python gates run on every push (`voice_lint`, `spec_check`,
+`validate_decisions`, `validate_roles`, `validate_tools`,
+`validate_policies`) alongside the existing pytest and eval-runner
+jobs.
+
 ## bring your own key
 
 The deployed demo runs on your API keys, not mine. Paste your Anthropic key

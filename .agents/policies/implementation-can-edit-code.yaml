@@ -1,0 +1,32 @@
+id: implementation-can-edit-code
+applies_to:
+  roles:
+    - engineering.implementation
+  tools:
+    - repo.apply_patch
+    - tests.run
+  actions:
+    - modify_code
+decision: allow
+conditions:
+  - field: request.path
+    op: not_startswith
+    value: src/agent/prompts/
+  - field: request.path
+    op: not_startswith
+    value: secrets/
+  - field: request.path
+    op: ne
+    value: .env
+priority: 80
+description: |
+  The implementation role may edit code under src/, app.py, tests/,
+  and eval_suites/, but never src/agent/prompts/, secrets/, or .env.
+  Prompt edits are gated separately by
+  eval-suite-required-before-prompt-change.
+rationale: |
+  Implementation is the only role with write_code: true. Bounding
+  the write surface to non-prompt, non-secret paths keeps the
+  prompt-or-model-change loop honest and keeps secrets out of the
+  diff.
+owner: platform

@@ -1,0 +1,27 @@
+required_gates:
+  - id: pytest
+    script: uv run pytest --cov=src --cov-fail-under=70
+    blocking: true
+  - id: spec_check
+    script: scripts/spec_check.py
+    blocking: true
+  - id: voice_lint
+    script: scripts/voice_lint.py
+    blocking: true
+    note: |
+      Runs against any governance copy the implementation touched
+      (specs, decisions, dreams, agents, ops). Code under src/ is
+      not in the lint scope today.
+
+conditional_gates:
+  - id: eval_runner
+    script: uv run python -m src.evals.runner --suite all
+    blocking: true
+    triggers:
+      - path_modified: src/agent/prompts/
+      - path_modified: src/config.py
+      - path_modified: src/retrieval/
+      - path_modified: src/agent/answerer.py
+    note: |
+      The eval-suite-required-before-prompt-change policy makes this
+      gate hard-blocking when the listed paths are touched.

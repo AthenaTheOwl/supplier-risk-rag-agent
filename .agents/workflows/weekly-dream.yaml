@@ -1,0 +1,62 @@
+# .agents/workflows/weekly-dream.yaml
+#
+# Declarative workflow for the weekly offline-cognition pass. The
+# orchestrator runs first; downstream roles consume the candidates.
+
+id: weekly-dream
+version: 0.1.0
+owner_guild: learning
+description: |
+  The steps the weekly dream job moves through. Runs Friday on cron
+  or via manual trigger. Every candidate carries
+  human_review_required: true; no CI job auto-applies a candidate.
+
+trigger:
+  - schedule: "Friday 22:00 UTC"
+  - manual: /dream-then-brief
+  - manual: operator-initiated
+
+steps:
+  - id: pull_history
+    role: learning.dream-orchestrator
+    output_type: log
+    status_semantics:
+      - pending: not yet started
+      - completed: last seven days of commits, eval reports, postmortems pulled
+
+  - id: run_modes
+    role: learning.dream-orchestrator
+    output_type: dream_report
+    status_semantics:
+      - in_progress: at least one mode running
+      - completed: all eight modes ran; candidates collected
+
+  - id: write_report
+    role: learning.dream-orchestrator
+    output_type: dream_report
+    status_semantics:
+      - drafted: dreams/YYYY-WNN/report.md exists
+      - lint_clean: voice_lint exits 0 against the report
+
+  - id: write_output_json
+    role: learning.dream-orchestrator
+    output_type: dream_report
+    status_semantics:
+      - drafted: dreams/YYYY-WNN/output.json exists
+      - schema_clean: future validate_dreams.py exits 0
+
+  - id: human_review
+    role: control.coordinator
+    output_type: review
+    status_semantics:
+      - pending: human reviewer not yet engaged
+      - approved: human applied or rejected each candidate
+      - escalated: review window passed; coordinator notifies
+
+post_conditions:
+  - rule: no_auto_apply
+    description: |
+      The dream-candidates-require-human-approval policy blocks any
+      automated path that would apply a candidate without explicit
+      human review. The post-condition is structural, not
+      configurable.

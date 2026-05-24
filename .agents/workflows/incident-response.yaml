@@ -1,0 +1,60 @@
+# .agents/workflows/incident-response.yaml
+#
+# Workflow that fires when a production smoke fails, a CI gate
+# misfires, or a Streamlit Cloud deploy regresses an answer.
+
+id: incident-response
+version: 0.1.0
+owner_guild: control
+description: |
+  The steps an incident moves through. Goal: contain the bad state,
+  record what happened, and decide whether to revert or roll
+  forward. The reset ledger entry lands in the same push that
+  performs the rewrite.
+
+trigger:
+  - signal: prod_smoke_failed
+  - signal: ci_gate_misfire_detected
+  - signal: streamlit_deploy_regression
+  - signal: citation_faithfulness_drop_below_1
+
+steps:
+  - id: contain
+    role: control.coordinator
+    output_type: log
+    status_semantics:
+      - acknowledged: incident logged in ops/event-log/
+      - contained: bad state isolated (revert PR drafted or deploy paused)
+
+  - id: diagnose
+    role: science.proof-gate-runner
+    output_type: postmortem
+    status_semantics:
+      - investigating: scorer deltas and logs collected
+      - root_cause_identified: failure mode named
+
+  - id: decide
+    role: control.coordinator
+    output_type: decision_memo
+    status_semantics:
+      - pending: decision not yet made
+      - revert: rollback initiated
+      - roll_forward: fix-forward chosen with a follow-up backlog item
+
+  - id: record_reset
+    role: control.coordinator
+    output_type: log
+    status_semantics:
+      - pending: reset ledger entry not yet written
+      - logged: ops/RESET_LEDGER.md carries the entry in the same push as the revert
+    note: |
+      Required if and only if the decide step chose revert via
+      force-push or history rewrite. A clean revert commit (no
+      history rewrite) does not need a reset ledger entry.
+
+  - id: postmortem
+    role: science.proof-gate-runner
+    output_type: postmortem
+    status_semantics:
+      - drafted: timeline + root cause + remediation written
+      - published: postmortem lands under ops/postmortems/YYYY-MM-DD.md

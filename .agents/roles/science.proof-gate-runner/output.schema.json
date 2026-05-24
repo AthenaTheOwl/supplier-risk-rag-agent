@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://supplier-risk-rag-agent.local/roles/science.proof-gate-runner/output.schema.json",
+  "title": "ProofGateRunnerOutput",
+  "description": "Gate-run + eval-report artifact the proof-gate-runner emits per change.",
+  "type": "object",
+  "required": ["change_id", "eval_scores", "gate_results", "decision"],
+  "additionalProperties": false,
+  "properties": {
+    "change_id": {"type": "string"},
+    "eval_scores": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "recall_at_5": {"type": "number", "minimum": 0, "maximum": 1},
+        "citation_faithfulness": {"type": "number", "minimum": 0, "maximum": 1},
+        "abstention_precision": {"type": "number", "minimum": 0, "maximum": 1},
+        "refusal_correctness": {"type": "number", "minimum": 0, "maximum": 1}
+      }
+    },
+    "baseline_deltas": {
+      "type": "object",
+      "additionalProperties": {"type": "number"},
+      "description": "Per-axis delta against the last green run on main."
+    },
+    "gate_results": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "spec_check",
+        "voice_lint",
+        "validate_decisions",
+        "validate_roles",
+        "validate_tools",
+        "validate_policies"
+      ],
+      "properties": {
+        "spec_check": {"type": "string", "enum": ["passing", "failing"]},
+        "voice_lint": {"type": "string", "enum": ["passing", "failing"]},
+        "validate_decisions": {"type": "string", "enum": ["passing", "failing"]},
+        "validate_roles": {"type": "string", "enum": ["passing", "failing"]},
+        "validate_tools": {"type": "string", "enum": ["passing", "failing"]},
+        "validate_policies": {"type": "string", "enum": ["passing", "failing"]}
+      }
+    },
+    "decision": {"type": "string", "enum": ["approved", "blocked"]},
+    "report_path": {"type": "string"}
+  }
+}

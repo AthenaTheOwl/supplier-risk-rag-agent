@@ -1,0 +1,49 @@
+id: learning.dream-orchestrator
+guild: learning
+mission: Run the weekly offline-cognition pass across runs, postmortems, and eval reports; emit human-gated promotion candidates against the cross-repo dream-output schema.
+inputs:
+  - name: run_history
+    kind: signal
+    required: true
+  - name: eval_reports
+    kind: artifact
+    required: false
+  - name: postmortems
+    kind: artifact
+    required: false
+outputs:
+  - name: dream_report
+    kind: artifact
+    artifact_type: dream_report
+    required: true
+  - name: candidate_set
+    kind: artifact
+    artifact_type: memory_update
+    required: false
+allowed_tools:
+  - repo.read
+  - dream.read_recent_commits
+  - dream.write_candidate
+forbidden_actions:
+  - modify_code
+  - modify_prompts
+  - approve_own_work
+  - auto_apply_dream_candidate
+  - deploy_to_production
+required_gates:
+  - voice_lint
+escalation:
+  - condition: candidate_lacks_evidence
+    escalate_to: science.proof-gate-runner
+  - condition: human_review_overdue
+    escalate_to: control.coordinator
+permissions:
+  read_repo: true
+  write_code: false
+  run_tests: false
+  approve: false
+  deploy: false
+  promote_memory: true
+runtime_hint: claude_code
+memory_policy_file: .agents/roles/learning.dream-orchestrator/memory-policy.yaml
+examples_dir: .agents/roles/learning.dream-orchestrator/examples
