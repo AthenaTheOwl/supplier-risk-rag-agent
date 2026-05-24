@@ -1,0 +1,89 @@
+# meta.yaml — dream 2026-W21 audit trail
+#
+# Per-week audit record for the learning.dream-orchestrator
+# weekly pass. Pairs with report.md (narrative) and the candidate
+# files under candidates/.
+
+id: dream-2026-W21
+week: 2026-W21
+repo: supplier-risk-rag-agent
+generated_at: 2026-05-24T18:30:00Z
+generated_by:
+  kind: role
+  id: learning.dream-orchestrator
+  version: v1
+
+scope:
+  lookback_days: 7
+  window_start: 2026-05-18
+  window_end: 2026-05-24
+  sources:
+    - commits:
+        range: bca8d80..bcf19c7 (plus 5274a4d, 58797c6 from prior week tail)
+        ref: git log --since="2026-05-18" --pretty="%h %s"
+    - experiments:
+        path: experiments/01-cross-encoder-rerank/
+        notes: notes.md
+        baseline: baseline.json
+        variant: variant.json
+    - decisions:
+        path: decisions/
+        count: 10
+        new_this_week: 4
+    - allowlist:
+        path: decisions/.spec-check-allowlist.yaml
+        deferred_before_week: 16
+        deferred_after_week: 12
+    - eval_suites:
+        path: eval_suites/
+        count: 4
+        gate_set: [retrieval_quality, citation_faithfulness, supplier_risk_questions, refusal_cases]
+    - eval_baseline:
+        path: reports/baseline_eval_report.html
+    - release_ledger:
+        path: ops/RELEASE_LEDGER.md
+    - event_log:
+        path: ops/event-log/2026-05-24.jsonl
+
+modes_run:
+  - memory_consolidation
+  - skill_extraction
+  - golden_test_generation
+
+modes_skipped:
+  - id: failure_clustering
+    reason: no failures in the lookback window
+    reopen_when: a failure cluster appears in ops/event-log/
+  - id: adversarial_simulation
+    reason: generation budget and safe sandbox not yet wired
+    reopen_when: adversarial-test-generation skill graduates
+  - id: counterfactual
+    reason: next counterfactual is 01b, needs full EDGAR ingestion
+    reopen_when: experiments/01b-* baseline lands
+  - id: prompt_patch_generation
+    reason: no prompt drift signal in lookback window
+    reopen_when: prompt suite shows quality drift across runs
+  - id: architecture_drift_detection
+    reason: allowlist signal already visible; in-progress backfill
+    reopen_when: allowlist still carries deferred IDs after two more backfills
+
+candidates_produced:
+  total: 5
+  by_kind:
+    memory_update: 2
+    skill_patch: 1
+    test_generation: 2
+  files:
+    - candidates/memory-001-experiment-and-revert-discipline.md
+    - candidates/memory-002-deterministic-beats-learned-at-small-scale.md
+    - candidates/skill-001-run-experiment-with-revert-on-no-lift.md
+    - candidates/eval-001-pin-hybrid-ranker-weights-60-25-15.md
+    - candidates/eval-002-decision-schema-offline-cache-fallback.md
+
+human_review_required: true
+
+policy_refs:
+  - .agents/policies/dream-candidates-require-human-approval.yaml
+
+gates_passed:
+  - voice_lint

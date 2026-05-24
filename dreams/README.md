@@ -18,6 +18,12 @@ dreams/
 The first weekly folder lands in a later pass; the README reserves
 the shape now.
 
+## Published
+
+| Week | Folder | Candidates | Modes run |
+|---|---|---:|---|
+| 2026-W21 | [`2026-W21/`](2026-W21/) | 5 | memory_consolidation, skill_extraction, golden_test_generation |
+
 ## The eight dream modes
 
 The cross-repo `dream-output.schema.json` defines seven mode strings;
