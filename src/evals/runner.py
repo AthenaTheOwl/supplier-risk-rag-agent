@@ -179,6 +179,7 @@ def main() -> None:
                 "suite": args.suite,
                 "reranker": args.reranker,
                 "candidate_pool": args.candidate_pool if args.reranker else None,
+                "with_reranker": bool(args.reranker),
             },
             "results": results,
         }

@@ -10,9 +10,15 @@ from src.retrieval.ranker import HybridRanker
 
 
 @st.cache_resource(show_spinner=False)
-def load_agent() -> SupplierRiskAgent:
+def load_agent(use_reranker: bool = False) -> SupplierRiskAgent:
     chunks = load_sample_corpus()
-    return SupplierRiskAgent(HybridRanker(chunks))
+    reranker = None
+    if use_reranker:
+        # Lazy import keeps sentence-transformers off the default-path cost.
+        from src.retrieval.reranker import CrossEncoderReranker
+
+        reranker = CrossEncoderReranker()
+    return SupplierRiskAgent(HybridRanker(chunks, reranker=reranker))
 
 
 def sidebar_keys() -> None:
@@ -40,6 +46,21 @@ def sidebar_keys() -> None:
         st.session_state["anthropic_key"] = anthropic_key
         st.session_state["openai_key"] = openai_key
         st.divider()
+        st.markdown("### Retrieval")
+        use_reranker = st.checkbox(
+            "Enable cross-encoder reranker (slower, may improve recall)",
+            value=st.session_state.get("use_reranker", False),
+            help=(
+                "Off by default. When on, the hybrid ranker retrieves a wider "
+                "candidate pool and a cross-encoder reorders the top-k. The "
+                "model loads on first use (one-time ~80 MB download + a few "
+                "seconds of CPU init); each query then pays ~150-400 ms of "
+                "extra latency. The default hybrid stays the production path "
+                "per DEC-RET-001."
+            ),
+        )
+        st.session_state["use_reranker"] = use_reranker
+        st.divider()
         st.caption(
             "No keys? The app still works. Deterministic retrieval, verbatim-span "
             "citations, and the four eval suites all run without vendor calls."
@@ -47,7 +68,8 @@ def sidebar_keys() -> None:
 
 
 def render_answer(query: str, use_live_llm: bool) -> None:
-    agent = load_agent()
+    use_reranker = bool(st.session_state.get("use_reranker", False))
+    agent = load_agent(use_reranker=use_reranker)
     keys = None
     key_error = None
     try:
