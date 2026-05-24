@@ -1,6 +1,6 @@
 ---
 id: dream-2026-W21-memory-001
-kind: memory_update
+target_kind: memory_update
 target: .agents/AGENTS.md
 mode: memory_consolidation
 human_review_required: true

@@ -36,9 +36,10 @@
         "operations",
         "domain",
         "learning",
-        "documentation"
+        "documentation",
+        "commercial"
       ],
-      "description": "Owning guild. One of the twelve guilds named in ops/control-plane.md."
+      "description": "Owning guild. One of the twelve guilds named in ops/control-plane.md. The commercial guild is reserved for revenue-adjacent roles (pricing, packaging, subscriber experience) that don't fit product or design cleanly."
     },
     "mission": {
       "type": "string",

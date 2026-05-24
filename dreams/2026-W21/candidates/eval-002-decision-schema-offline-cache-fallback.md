@@ -1,6 +1,6 @@
 ---
 id: dream-2026-W21-eval-002
-kind: test_generation
+target_kind: test_generation
 target: tests/test_validate_decisions_offline.py
 mode: golden_test_generation
 human_review_required: true

@@ -33,3 +33,5 @@ jobs:
         run: python scripts/validate_skills.py
       - name: validate_dreams
         run: python scripts/validate_dreams.py
+      - name: check_schema_cache_freshness
+        run: python scripts/check_schema_cache_freshness.py

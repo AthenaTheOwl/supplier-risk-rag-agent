@@ -1,6 +1,6 @@
 ---
 id: dream-2026-W21-skill-001
-kind: skill_patch
+target_kind: skill_patch
 target: .agents/skills/run-experiment-with-revert/SKILL.md
 mode: skill_extraction
 human_review_required: true

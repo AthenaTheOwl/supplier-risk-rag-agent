@@ -82,7 +82,7 @@
     },
     "candidates": {
       "type": "array",
-      "description": "Promotion candidates this run proposes. Each candidate is one of the four typed shapes below and must carry evidence plus an explicit human_review_required flag.",
+      "description": "Promotion candidates this run proposes. Each candidate is one of the four typed shapes below and must carry evidence plus an explicit human_review_required flag. Discriminator is target_kind; earlier emissions used kind and product-repo validators tolerate both during the transition.",
       "items": {
         "oneOf": [
           {"$ref": "#/$defs/memory_update"},
@@ -109,10 +109,11 @@
     },
     "memory_update": {
       "type": "object",
-      "required": ["kind", "target", "patch", "evidence", "human_review_required"],
+      "$comment": "Canonical discriminator is target_kind. Earlier emissions used kind; validators in product repos tolerate both during the transition. Future emissions should use target_kind.",
+      "required": ["target_kind", "target", "patch", "evidence", "human_review_required"],
       "additionalProperties": false,
       "properties": {
-        "kind": {"const": "memory_update", "description": "Discriminator."},
+        "target_kind": {"const": "memory_update", "description": "Discriminator. Canonical field is target_kind; legacy emissions used kind (validators tolerate both)."},
         "target": {"type": "string", "description": "Path of the memory file the update would land in."},
         "patch": {"type": "string", "description": "Proposed text change or diff."},
         "evidence": {"$ref": "#/$defs/evidence_array"},
@@ -121,10 +122,11 @@
     },
     "test_generation": {
       "type": "object",
-      "required": ["kind", "spec_id", "test_path", "evidence", "human_review_required"],
+      "$comment": "Canonical discriminator is target_kind. Earlier emissions used kind; validators in product repos tolerate both during the transition. Future emissions should use target_kind.",
+      "required": ["target_kind", "spec_id", "test_path", "evidence", "human_review_required"],
       "additionalProperties": false,
       "properties": {
-        "kind": {"const": "test_generation", "description": "Discriminator."},
+        "target_kind": {"const": "test_generation", "description": "Discriminator. Canonical field is target_kind; legacy emissions used kind (validators tolerate both)."},
         "spec_id": {"type": "string", "description": "Spec the generated test covers."},
         "test_path": {"type": "string", "description": "Path of the proposed test file."},
         "evidence": {"$ref": "#/$defs/evidence_array"},
@@ -133,10 +135,11 @@
     },
     "skill_patch": {
       "type": "object",
-      "required": ["kind", "skill_id", "patch", "evidence", "human_review_required"],
+      "$comment": "Canonical discriminator is target_kind. Earlier emissions used kind; validators in product repos tolerate both during the transition. Future emissions should use target_kind.",
+      "required": ["target_kind", "skill_id", "patch", "evidence", "human_review_required"],
       "additionalProperties": false,
       "properties": {
-        "kind": {"const": "skill_patch", "description": "Discriminator."},
+        "target_kind": {"const": "skill_patch", "description": "Discriminator. Canonical field is target_kind; legacy emissions used kind (validators tolerate both)."},
         "skill_id": {"type": "string", "description": "Id of the skill being patched."},
         "patch": {"type": "string", "description": "Proposed change to instructions, scripts, or eval set."},
         "evidence": {"$ref": "#/$defs/evidence_array"},
@@ -145,10 +148,11 @@
     },
     "backlog_item": {
       "type": "object",
-      "required": ["kind", "title", "rationale", "evidence", "human_review_required"],
+      "$comment": "Canonical discriminator is target_kind. Earlier emissions used kind; validators in product repos tolerate both during the transition. Future emissions should use target_kind.",
+      "required": ["target_kind", "title", "rationale", "evidence", "human_review_required"],
       "additionalProperties": false,
       "properties": {
-        "kind": {"const": "backlog_item", "description": "Discriminator."},
+        "target_kind": {"const": "backlog_item", "description": "Discriminator. Canonical field is target_kind; legacy emissions used kind (validators tolerate both)."},
         "title": {"type": "string", "description": "Short title for the proposed work."},
         "rationale": {"type": "string", "description": "Why the work matters, grounded in the evidence."},
         "evidence": {"$ref": "#/$defs/evidence_array"},

@@ -104,10 +104,15 @@
       "type": "string",
       "description": "Person or guild accountable for the decision."
     },
+    "amends": {
+      "type": "string",
+      "pattern": "^DEC-[A-Z]+-[0-9]{3,}-[a-z][a-z0-9-]*$",
+      "description": "ID of a prior DEC that this DEC amends. The prior DEC is not changed; this DEC documents the amendment as a sibling artifact."
+    },
     "supersedes": {
       "type": "string",
       "pattern": "^DEC-[A-Z]+-[0-9]{3,}-[a-z][a-z0-9-]*$",
-      "description": "Id of an older DEC that this one replaces."
+      "description": "ID of a prior DEC that this DEC supersedes. Use sparingly — supersession is irreversible decision history."
     },
     "superseded_by": {
       "type": "string",

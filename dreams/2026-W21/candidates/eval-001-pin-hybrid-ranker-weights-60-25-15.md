@@ -1,6 +1,6 @@
 ---
 id: dream-2026-W21-eval-001
-kind: test_generation
+target_kind: test_generation
 target: tests/test_ranker_weights.py
 mode: golden_test_generation
 human_review_required: true

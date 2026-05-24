@@ -177,32 +177,22 @@ def validate_meta(meta_path: Path) -> tuple[dict[str, Any] | None, list[str]]:
 
 
 def validate_candidate(cand_path: Path, rel: str) -> list[str]:
-    """Per-candidate front-matter check. Required: target_kind (or `kind`
-    as the schema-canonical discriminator), evidence, human_review_required."""
+    """Per-candidate front-matter check. Required: target_kind, evidence,
+    human_review_required."""
     violations: list[str] = []
     data, err = parse_front_matter(cand_path)
     if err is not None:
         return [f"{rel}: {err}"]
     assert data is not None
 
-    # Accept either `target_kind` (task-spec field) or `kind` (the
-    # schema-canonical discriminator). Both reference the same enum.
-    tk_field = None
-    if "target_kind" in data:
-        tk_field = "target_kind"
-    elif "kind" in data:
-        tk_field = "kind"
-
-    if tk_field is None:
-        violations.append(
-            f"{rel}: missing required field `target_kind` (or `kind`)"
-        )
+    if "target_kind" not in data:
+        violations.append(f"{rel}: missing required field `target_kind`")
     else:
-        tk = data[tk_field]
+        tk = data["target_kind"]
         if tk not in ALLOWED_TARGET_KINDS:
             allowed = ", ".join(sorted(ALLOWED_TARGET_KINDS))
             violations.append(
-                f"{rel}: `{tk_field}` must be one of [{allowed}], got {tk!r}"
+                f"{rel}: `target_kind` must be one of [{allowed}], got {tk!r}"
             )
 
     if "evidence" not in data:
