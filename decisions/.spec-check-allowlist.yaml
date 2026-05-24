@@ -19,7 +19,49 @@
 # role lands, remove the entry here and add the owner_role link in
 # traceability.md.
 
-deferred: []
+deferred:
+  # Retrieval subsystem (spec 0002). R-RET-001 is resolved by
+  # DEC-RET-001-hybrid-bm25-cosine-term-overlap-weighted.md.
+  - id: R-RET-002
+    note: deterministic CI retrieval; DEC backfill pending
+  - id: R-RET-003
+    note: filtered retrieval by cik/accession/section/metadata; DEC backfill pending
+  - id: R-RET-004
+    note: reranker opt-in default-off; DEC backfill pending (rationale documented in DEC-RET-001)
+  - id: R-RET-005
+    note: Chroma persistence helper for developer-local full-corpus runs; DEC backfill pending
+
+  # LLM provider subsystem (spec 0003). R-LLM-001 is resolved by
+  # DEC-LLM-001-provider-abstraction-default-anthropic.md.
+  - id: R-LLM-002
+    note: no env reads inside src/agent/llm.py; explicit Keys object; DEC backfill pending
+  - id: R-LLM-003
+    note: provider switch via env var without code edits; DEC backfill pending
+
+  # Eval suites and thresholds (spec 0004). R-EVL-001 is resolved by
+  # DEC-EVL-001-four-suite-eval-gate-with-thresholds.md.
+  - id: R-EVL-002
+    note: deterministic CI eval runs without vendor keys; DEC backfill pending
+  - id: R-EVL-003
+    note: each suite targets a distinct failure mode; DEC backfill pending
+  - id: R-EVL-004
+    note: experiments re-use the same four suites for baseline vs variant; DEC backfill pending
+  - id: R-EVL-005
+    note: release ledger records which gates each release passed; DEC backfill pending
+
+  # Deploy + secrets (spec 0005). R-DEP-001 is resolved by
+  # DEC-DEP-001-byok-streamlit-no-committed-keys.md.
+  - id: R-DEP-002
+    note: missing-key fallback to deterministic retrieval; DEC backfill pending
+  - id: R-DEP-003
+    note: STREAMLIT_LOCAL=1 gates .env loading for local dev; DEC backfill pending
+
+  # Citation faithfulness (spec 0006). R-CIT-001 is resolved by
+  # DEC-CIT-001-verbatim-span-verification-post-generation.md.
+  - id: R-CIT-002
+    note: citations carry CIK/accession/section/span/offsets/chunk_id; DEC backfill pending
+  - id: R-CIT-003
+    note: verifier accepts DocumentChunk or SearchResult-like inputs; DEC backfill pending
 
 roles_deferred:
   # No role-owner gaps in spec 0001: every R-CDCP-* requirement names

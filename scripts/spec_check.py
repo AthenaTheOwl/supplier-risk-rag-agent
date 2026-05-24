@@ -49,14 +49,18 @@ REQUIRED_FILES = (
 )
 
 # R-* prefixes reserved for supplier-risk-rag-agent specs. CDCP covers
-# the cognitive delivery control plane install (spec 0001). Future
-# specs may carve out additional prefixes; add them here.
+# the cognitive delivery control plane install (spec 0001). The
+# subsystem backfill specs (0002-0006) carve out one prefix each.
+# Future specs may add prefixes; add them here.
 ALLOWED_PREFIXES = {
     "CDCP",  # 0001 cognitive delivery control plane
     "ING",   # ingestion (SEC client, chunker, manifest)
-    "RET",   # retrieval (BM25, embedder, hybrid ranker, reranker)
+    "RET",   # 0002 retrieval (BM25, embedder, hybrid ranker, reranker)
     "AGT",   # agent (planner, answerer, refusal, citations)
-    "EVL",   # evals (recall, citation faithfulness, abstention, refusal)
+    "LLM",   # 0003 LLM provider abstraction
+    "EVL",   # 0004 evals (recall, citation faithfulness, abstention, refusal)
+    "DEP",   # 0005 deploy + BYOK + secrets
+    "CIT",   # 0006 citation verifier
     "UI",    # streamlit app surface
     "OPS",   # ops + deployment + BYOK
 }
