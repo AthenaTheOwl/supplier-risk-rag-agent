@@ -24,37 +24,21 @@ deferred:
   # resolved by DEC-RET-001..DEC-RET-005 respectively. No deferred
   # entries remain for spec 0002.
 
-  # LLM provider subsystem (spec 0003). R-LLM-001 is resolved by
-  # DEC-LLM-001-provider-abstraction-default-anthropic.md.
-  - id: R-LLM-002
-    note: no env reads inside src/agent/llm.py; explicit Keys object; DEC backfill pending
-  - id: R-LLM-003
-    note: provider switch via env var without code edits; DEC backfill pending
+  # LLM provider subsystem (spec 0003). R-LLM-001..R-LLM-003 are all
+  # resolved by DEC-LLM-001..DEC-LLM-003 respectively. No deferred
+  # entries remain for spec 0003.
 
-  # Eval suites and thresholds (spec 0004). R-EVL-001 is resolved by
-  # DEC-EVL-001-four-suite-eval-gate-with-thresholds.md.
-  - id: R-EVL-002
-    note: deterministic CI eval runs without vendor keys; DEC backfill pending
-  - id: R-EVL-003
-    note: each suite targets a distinct failure mode; DEC backfill pending
-  - id: R-EVL-004
-    note: experiments re-use the same four suites for baseline vs variant; DEC backfill pending
-  - id: R-EVL-005
-    note: release ledger records which gates each release passed; DEC backfill pending
+  # Eval suites and thresholds (spec 0004). R-EVL-001..R-EVL-005 are
+  # all resolved by DEC-EVL-001..DEC-EVL-005 respectively. No deferred
+  # entries remain for spec 0004.
 
-  # Deploy + secrets (spec 0005). R-DEP-001 is resolved by
-  # DEC-DEP-001-byok-streamlit-no-committed-keys.md.
-  - id: R-DEP-002
-    note: missing-key fallback to deterministic retrieval; DEC backfill pending
-  - id: R-DEP-003
-    note: STREAMLIT_LOCAL=1 gates .env loading for local dev; DEC backfill pending
+  # Deploy + secrets (spec 0005). R-DEP-001..R-DEP-003 are all
+  # resolved by DEC-DEP-001..DEC-DEP-003 respectively. No deferred
+  # entries remain for spec 0005.
 
-  # Citation faithfulness (spec 0006). R-CIT-001 is resolved by
-  # DEC-CIT-001-verbatim-span-verification-post-generation.md.
-  - id: R-CIT-002
-    note: citations carry CIK/accession/section/span/offsets/chunk_id; DEC backfill pending
-  - id: R-CIT-003
-    note: verifier accepts DocumentChunk or SearchResult-like inputs; DEC backfill pending
+  # Citation faithfulness (spec 0006). R-CIT-001..R-CIT-003 are all
+  # resolved by DEC-CIT-001..DEC-CIT-003 respectively. No deferred
+  # entries remain for spec 0006.
 
 roles_deferred:
   # No role-owner gaps in spec 0001: every R-CDCP-* requirement names
