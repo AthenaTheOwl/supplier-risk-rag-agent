@@ -1,0 +1,27 @@
+required_gates:
+  - id: voice_lint
+    script: scripts/voice_lint.py
+    blocking: true
+    note: |
+      Runs against decisions/DEC-EVL-*.md and any narrative copy
+      touched by the suite change.
+  - id: spec_check
+    script: scripts/spec_check.py
+    blocking: true
+    note: |
+      Ensures the six-file ledger and R-EVL-* traceability stay
+      consistent when a new suite case maps back to a requirement.
+  - id: validate_decisions
+    script: scripts/validate_decisions.py
+    blocking: true
+    note: |
+      Every threshold change or new-case landing carries a
+      decisions/DEC-EVL-*.md that parses against the cross-repo
+      decision.schema.json.
+  - id: eval_runner
+    script: uv run python -m src.evals.runner --suite all
+    blocking: true
+    note: |
+      Both the baseline and the candidate run report through this
+      runner. A drop on any of the four scoring axes blocks the
+      curator's suite update unless the matching DEC accepts it.

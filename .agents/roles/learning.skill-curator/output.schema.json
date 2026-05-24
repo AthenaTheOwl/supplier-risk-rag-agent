@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://supplier-risk-rag-agent.local/roles/learning.skill-curator/output.schema.json",
+  "title": "SkillCuratorOutput",
+  "description": "Skill-graduation artifact set: the SKILL.md package, the matching DEC-SKL decision memo, and the CATALOG.md graduated-section update.",
+  "type": "object",
+  "required": ["skill_id", "skill_path", "decision_path", "catalog_updated", "evidence", "human_review_required"],
+  "additionalProperties": false,
+  "properties": {
+    "skill_id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]*$"
+    },
+    "skill_path": {"type": "string"},
+    "decision_path": {"type": "string"},
+    "catalog_updated": {"type": "boolean"},
+    "trigger_evidence_kind": {
+      "type": "string",
+      "enum": ["recurring_commits", "dream_candidate"]
+    },
+    "evidence": {
+      "type": "array",
+      "minItems": 3,
+      "items": {"type": "string"},
+      "description": "Three or more references that justify the graduation. Commit SHAs, dream candidate ids, or experiment folder paths."
+    },
+    "promotion_policy": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["passing_skill_eval", "human_approval", "owner_guild_sign_off"]
+      },
+      "minItems": 1
+    },
+    "human_review_required": {"type": "boolean", "const": true}
+  }
+}

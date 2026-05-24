@@ -1,0 +1,4 @@
+allowed_tools:
+  - repo.read
+  - dream.read_recent_commits
+  - gates.run_voice_lint

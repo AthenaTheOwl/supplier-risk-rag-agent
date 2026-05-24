@@ -41,22 +41,14 @@ deferred:
   # entries remain for spec 0006.
 
 roles_deferred:
-  # Audit pass on 2026-05-24: every R-* across specs 0001-0006 already
+  # Audit pass on 2026-05-24: every R-* across specs 0001-0006
   # carries an owner_role token in the matching traceability.md table.
-  # Twenty-nine R-* requirements, all mapped to one of the six
+  # Twenty-nine R-* requirements, all mapped to one of the eight
   # installed roles (`control.coordinator`, `product.spec-writer`,
   # `engineering.implementation`, `engineering.code-reviewer`,
-  # `science.proof-gate-runner`, `learning.dream-orchestrator`). Zero
-  # owner_role tokens added in this pass; one pending-graduation
-  # marker recorded on R-CDCP-007 where the closest installed fit
-  # (`product.spec-writer`) is a stretch and a future
-  # `learning.skill-curator` role from the deferred 44-role catalog
-  # would land closer to the surface area.
-  - id: R-CDCP-007
-    note: |
-      Skill graduation surface; assigned to product.spec-writer
-      today, pending a `learning.skill-curator` role from the
-      deferred 44-role catalog noted in .agents/CATALOG.md `##
-      Deferred work`. The current assignment is the closest
-      installed fit; the marker is informational and does not
-      block any gate.
+  # `science.proof-gate-runner`, `science.eval-curator`,
+  # `learning.dream-orchestrator`, `learning.skill-curator`). The
+  # R-CDCP-007 pending-graduation marker was cleared on 2026-05-24
+  # when `learning.skill-curator` graduated from the deferred 44-role
+  # catalog; the traceability table now points directly at that role.
+  # No entries remain.

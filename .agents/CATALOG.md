@@ -5,7 +5,16 @@ registered under `.agents/`. The `validate_*.py` scripts in
 `scripts/` walk these files and validate each against the cross-repo
 schema set from athena-site.
 
-## Roles (6)
+## Graduated
+
+Two roles promoted on 2026-05-24 from the deferred 44-role catalog:
+
+| ID | Guild | Date | Originating evidence |
+|---|---|---|---|
+| `learning.skill-curator` | learning | 2026-05-24 | 2026-W21 dream pass graduated `run-experiment-with-revert` (event `skill.promoted` in `ops/event-log/2026-05-24.jsonl`); R-CDCP-007 pending-graduation marker in `decisions/.spec-check-allowlist.yaml`. |
+| `science.eval-curator` | science | 2026-05-24 | This repo is the eval-discipline reference across the portfolio: DEC-EVL-001..005, `eval_suites/`, `docs/eval-discipline.md`, and `experiments/01-cross-encoder-rerank/`. |
+
+## Roles (8)
 
 | ID | Guild | Mission |
 |---|---|---|
@@ -14,7 +23,9 @@ schema set from athena-site.
 | `engineering.implementation` | engineering | Land the narrowest traceable code slice; never touch prompts without paired eval results. |
 | `engineering.code-reviewer` | engineering | Read the diff against the spec and the DEC; never edit code. |
 | `science.proof-gate-runner` | science | Own the four eval suites and the six python governance gates; refuse merges that regress any axis. |
+| `science.eval-curator` | science | Own the four-suite YAMLs, thresholds, judge prompts, and regression baselines that gate every prompt or model change. |
 | `learning.dream-orchestrator` | learning | Run the weekly offline-cognition pass; emit human-gated promotion candidates. |
+| `learning.skill-curator` | learning | Govern skill graduation: package a recurring pattern (3+ commits or dream candidate) into a SKILL.md with promotion policy and gated evals. |
 
 Each role folder under `.agents/roles/<id>/` carries:
 
@@ -87,10 +98,10 @@ alongside the new gates job.
 
 ## Deferred work
 
-- The full 44-role operating-model catalog from athena-site is
-  deferred. Six core roles cover the single-change flow this repo
-  runs today; later specs land additional roles as the surfaces
-  earn them.
+- The full 44-role operating-model catalog from athena-site stays
+  partly deferred. Eight roles ship today (six core + two graduated
+  on 2026-05-24); the remaining 36 land as future surfaces earn
+  them.
 - Enforcement of the `eval-suite-required-before-prompt-change`
   coupling in CI (today the policy file encodes the rule and the
   workflow YAML documents the steps; a future commit wires the

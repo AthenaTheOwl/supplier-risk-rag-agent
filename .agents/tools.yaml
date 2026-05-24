@@ -17,7 +17,9 @@ tools:
       - engineering.implementation
       - engineering.code-reviewer
       - science.proof-gate-runner
+      - science.eval-curator
       - learning.dream-orchestrator
+      - learning.skill-curator
     requires_approval: false
     forbidden_paths:
       - .env
@@ -74,6 +76,8 @@ tools:
       - engineering.implementation
       - engineering.code-reviewer
       - science.proof-gate-runner
+      - science.eval-curator
+      - learning.skill-curator
     requires_approval: false
     forbidden_paths: []
     emits_events:
@@ -92,6 +96,7 @@ tools:
       - engineering.implementation
       - engineering.code-reviewer
       - science.proof-gate-runner
+      - science.eval-curator
     requires_approval: false
     forbidden_paths: []
     emits_events:
@@ -168,6 +173,7 @@ tools:
     allowed_roles:
       - engineering.implementation
       - science.proof-gate-runner
+      - science.eval-curator
     requires_approval: false
     forbidden_paths: []
     emits_events:
@@ -183,6 +189,7 @@ tools:
     allowed_roles:
       - engineering.implementation
       - science.proof-gate-runner
+      - science.eval-curator
     requires_approval: false
     forbidden_paths: []
     emits_events:
@@ -198,6 +205,7 @@ tools:
     allowed_roles:
       - engineering.implementation
       - science.proof-gate-runner
+      - science.eval-curator
     requires_approval: false
     forbidden_paths: []
     emits_events:
@@ -213,6 +221,7 @@ tools:
     allowed_roles:
       - engineering.implementation
       - science.proof-gate-runner
+      - science.eval-curator
     requires_approval: false
     forbidden_paths: []
     emits_events:
@@ -241,6 +250,7 @@ tools:
     risk_level: low
     allowed_roles:
       - learning.dream-orchestrator
+      - learning.skill-curator
     requires_approval: false
     forbidden_paths: []
     emits_events:

@@ -1,0 +1,24 @@
+required_gates:
+  - id: voice_lint
+    script: scripts/voice_lint.py
+    blocking: true
+    note: |
+      Runs against .agents/skills/<id>/SKILL.md and the matching
+      decisions/DEC-SKL-*.md before the graduation is handed to a
+      human reviewer.
+  - id: validate_decisions
+    script: scripts/validate_decisions.py
+    blocking: true
+    note: |
+      The DEC-SKL-* memo must parse against the cross-repo
+      decision.schema.json before the graduation lands.
+
+planned_gates:
+  - id: validate_skills
+    script: scripts/validate_skills.py
+    blocking: true
+    status: planned
+    note: |
+      Lands once a second graduated skill exists in this repo. Walks
+      .agents/skills/*/SKILL.md and validates each against the
+      cross-repo skill.schema.json from athena-site.
