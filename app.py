@@ -17,21 +17,33 @@ def load_agent() -> SupplierRiskAgent:
 
 def sidebar_keys() -> None:
     with st.sidebar:
-        st.markdown("### API keys")
-        st.caption("Your keys stay in this browser session. They are not logged or stored.")
+        st.markdown("### Bring your own key")
+        st.caption(
+            "Paste your API keys below to enable live Claude answers. Keys stay in "
+            "this browser session (`st.session_state`). They are not logged, stored, "
+            "or sent anywhere except the vendor SDK call you triggered."
+        )
         anthropic_key = st.text_input(
             "Anthropic API key",
             type="password",
             value=st.session_state.get("anthropic_key", ""),
+            help="Required for the Live Claude toggle. Without it the app still "
+            "returns the deterministic cited answer.",
         )
         openai_key = st.text_input(
             "OpenAI API key",
             type="password",
             value=st.session_state.get("openai_key", ""),
-            help="Only needed for live ingestion or OpenAI-backed experiments.",
+            help="Optional. Only needed for OpenAI-backed experiments or live "
+            "ingestion paths.",
         )
         st.session_state["anthropic_key"] = anthropic_key
         st.session_state["openai_key"] = openai_key
+        st.divider()
+        st.caption(
+            "No keys? The app still works. Deterministic retrieval, verbatim-span "
+            "citations, and the four eval suites all run without vendor calls."
+        )
 
 
 def render_answer(query: str, use_live_llm: bool) -> None:
@@ -86,17 +98,26 @@ def main() -> None:
     sidebar_keys()
 
     st.title("Supplier Risk RAG Agent")
-    st.caption("SEC filing excerpts in, cited answers out.")
+    st.caption(
+        "Citation-faithful RAG over SEC EDGAR filings. Every claim points at a "
+        "verbatim span in a real 10-K; unverified spans get refused, not "
+        "paraphrased."
+    )
+    st.caption(
+        "Try a starter question below, or write your own. Toggle **Live Claude** "
+        "to rewrite the answer with your Anthropic key; leave it off for the "
+        "deterministic cited answer."
+    )
 
     example_queries = [
+        "Which suppliers in this corpus disclosed export-control exposure?",
         "Which companies disclosed customer-concentration risk?",
-        "What export-control exposure was cited in 2024 filings?",
         "Which firms mentioned advanced packaging capacity constraints?",
         "Where did filings mention supplier concentration or sole-source suppliers?",
     ]
 
-    selected_example = st.selectbox("Examples", options=example_queries, index=0)
-    query = st.text_input("Question", value=selected_example)
+    selected_example = st.selectbox("Starter questions", options=example_queries, index=0)
+    query = st.text_input("Your question", value=selected_example)
     cols = st.columns([1, 1, 4])
     with cols[0]:
         live_llm = st.toggle("Live Claude", value=False)
