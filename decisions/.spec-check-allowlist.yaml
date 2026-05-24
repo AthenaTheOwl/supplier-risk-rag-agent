@@ -20,16 +20,9 @@
 # traceability.md.
 
 deferred:
-  # Retrieval subsystem (spec 0002). R-RET-001 is resolved by
-  # DEC-RET-001-hybrid-bm25-cosine-term-overlap-weighted.md.
-  - id: R-RET-002
-    note: deterministic CI retrieval; DEC backfill pending
-  - id: R-RET-003
-    note: filtered retrieval by cik/accession/section/metadata; DEC backfill pending
-  - id: R-RET-004
-    note: reranker opt-in default-off; DEC backfill pending (rationale documented in DEC-RET-001)
-  - id: R-RET-005
-    note: Chroma persistence helper for developer-local full-corpus runs; DEC backfill pending
+  # Retrieval subsystem (spec 0002). R-RET-001..R-RET-005 are all
+  # resolved by DEC-RET-001..DEC-RET-005 respectively. No deferred
+  # entries remain for spec 0002.
 
   # LLM provider subsystem (spec 0003). R-LLM-001 is resolved by
   # DEC-LLM-001-provider-abstraction-default-anthropic.md.
