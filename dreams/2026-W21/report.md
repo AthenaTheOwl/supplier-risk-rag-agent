@@ -123,3 +123,29 @@ turn on `architecture_drift_detection` as a fourth mode. The
 allowlist signal earned its own reopen path this week and is
 load-bearing for the spec_check gate; a structured drift report
 gives reviewers a single artifact to scan.
+
+## Promotion record
+
+All five candidates were promoted on 2026-05-24 in a single human
+review pass. The promotion landed under one commit per portfolio
+convention; each candidate file now carries `status: promoted` and
+`promotion_date: 2026-05-24` in its front-matter.
+
+| Candidate | Mode | Landing artifact |
+|---|---|---|
+| memory-001-experiment-and-revert-discipline | memory_consolidation | `.agents/AGENTS.md` `## Lessons promoted from weekly dreams` |
+| memory-002-deterministic-beats-learned-at-small-scale | memory_consolidation | `.agents/AGENTS.md` `## Lessons promoted from weekly dreams` |
+| skill-001-run-experiment-with-revert-on-no-lift | skill_extraction | `.agents/skills/run-experiment-with-revert/SKILL.md` |
+| eval-001-pin-hybrid-ranker-weights-60-25-15 | golden_test_generation | `tests/test_ranker_weights.py` |
+| eval-002-decision-schema-offline-cache-fallback | golden_test_generation | `tests/test_validate_decisions_offline.py` (plus an env-var override on `scripts/validate_decisions.py`) |
+
+The skill graduated at v0.1.0 with `passing_skill_eval` plus
+`human_approval` in the promotion policy. The four cross-repo eval
+suites are listed as the skill's eval set; the skill's
+`passing_skill_eval` gate is therefore satisfied today by the same
+four-suite gate the rest of the repo runs on push.
+
+The skill ships as the second reusable skill in the portfolio after
+ai-field-brief's `install-cdcp-governance`. The next candidate the
+2026-W22 dream pass might surface is a cross-metric tradeoff skill
+(see the `## Honest deferrals` section in the new SKILL.md).

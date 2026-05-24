@@ -13,6 +13,7 @@ Exit codes: 0 OK, 1 violations found.
 from __future__ import annotations
 
 import json
+import os
 import sys
 import urllib.error
 import urllib.request
@@ -22,10 +23,13 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[1]
 DECISIONS_DIR = ROOT / "decisions"
 CACHE_PATH = ROOT / "ops" / "schemas-cache" / "decision.schema.json"
-REMOTE_URL = (
+DEFAULT_REMOTE_URL = (
     "https://raw.githubusercontent.com/AthenaTheOwl/athena-site/main/"
     "ops/schemas/decision.schema.json"
 )
+# Env-var override so the offline-cache code path is testable end-to-end.
+# Promoted from eval-002 in the 2026-W21 dream pass.
+REMOTE_URL = os.environ.get("SUPPLIER_RISK_RAG_SCHEMA_URL_BASE", DEFAULT_REMOTE_URL)
 FETCH_TIMEOUT_SECONDS = 5
 
 

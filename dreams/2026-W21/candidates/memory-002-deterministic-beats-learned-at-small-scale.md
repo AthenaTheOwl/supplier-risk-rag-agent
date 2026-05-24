@@ -4,6 +4,8 @@ kind: memory_update
 target: .agents/AGENTS.md
 mode: memory_consolidation
 human_review_required: true
+status: promoted
+promotion_date: 2026-05-24
 evidence:
   - experiments/01-cross-encoder-rerank/notes.md
   - experiments/01-cross-encoder-rerank/variant.json

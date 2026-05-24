@@ -1,9 +1,11 @@
 ---
 id: dream-2026-W21-skill-001
 kind: skill_patch
-target: .agents/skills/run-experiment-with-revert-on-no-lift/SKILL.md
+target: .agents/skills/run-experiment-with-revert/SKILL.md
 mode: skill_extraction
 human_review_required: true
+status: promoted
+promotion_date: 2026-05-24
 evidence:
   - experiments/01-cross-encoder-rerank/notes.md
   - experiments/01-cross-encoder-rerank/config.yaml

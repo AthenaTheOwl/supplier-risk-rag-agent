@@ -4,6 +4,8 @@ kind: test_generation
 target: tests/test_ranker_weights.py
 mode: golden_test_generation
 human_review_required: true
+status: promoted
+promotion_date: 2026-05-24
 evidence:
   - decisions/DEC-RET-001-hybrid-bm25-cosine-term-overlap-weighted.md
   - src/retrieval/ranker.py

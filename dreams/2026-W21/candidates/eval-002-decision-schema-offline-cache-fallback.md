@@ -4,6 +4,8 @@ kind: test_generation
 target: tests/test_validate_decisions_offline.py
 mode: golden_test_generation
 human_review_required: true
+status: promoted
+promotion_date: 2026-05-24
 evidence:
   - scripts/validate_decisions.py
   - ops/schemas-cache/decision.schema.json

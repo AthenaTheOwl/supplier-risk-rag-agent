@@ -122,3 +122,48 @@ why. This file names how the agent behaves while building.
 - A prompt edit without a paired eval run: the
   `eval-suite-required-before-prompt-change` policy fires and the
   change is blocked.
+
+## Lessons promoted from weekly dreams
+
+This section holds memory entries promoted from the
+`learning.dream-orchestrator` weekly retrospective. Each entry names
+the lesson, the do/don't shape, and the candidate file the lesson
+was promoted from.
+
+### Experiment-and-revert as the right pattern when no lift · promoted from 2026-W21 dream
+
+Changes with uncertain eval lift (a new reranker, a different
+chunker, a swapped embedder) land under `experiments/NN-<slug>/`
+with `config.yaml`, `baseline.json`, `variant.json`, and `notes.md`.
+The four-suite gate decides; the experiment ships as a documented
+negative result if the variant misses any threshold. Production code
+is reverted in the same pass that records the result.
+
+- do: scope the rule to changes with uncertain eval lift, land all
+  four experiment files, run the same four-suite gate on baseline
+  and variant, write up the rejection note in the same commit.
+- don't: skip the experiment folder for "obvious wins," collapse
+  the gate set to one suite, or leave the variant code on trunk
+  after a negative result.
+
+Promoted from `dreams/2026-W21/candidates/memory-001-experiment-and-revert-discipline.md`.
+
+### Deterministic beats learned at small scale unless evals justify · promoted from 2026-W21 dream
+
+A deterministic retriever beats a learned reranker at small corpus
+scale unless evals justify the cost. The 20-case `retrieval_quality`
+suite saturates recall@5 at 1.000 under the BM25 + hashing-cosine +
+overlap hybrid; the `01-cross-encoder-rerank` experiment confirmed
+the reranker had no headroom to claim and broke the
+`citation_faithfulness` 0.95 gate by reordering chunks.
+
+- do: keep retrieval deterministic at current corpus size, pair
+  every "let's add a learned model" proposal with a saturation
+  check against the recall@5 baseline, leave the reranker code
+  opt-in for the `01b` follow-up on a larger corpus.
+- don't: drop the deterministic path because a learned model "feels
+  better," generalize the rule past the small-corpus qualifier, or
+  re-run the experiment without recording the result under
+  `experiments/`.
+
+Promoted from `dreams/2026-W21/candidates/memory-002-deterministic-beats-learned-at-small-scale.md`.
