@@ -40,6 +40,59 @@ demo with anything.
   [DEC-LLM-001](decisions/DEC-LLM-001-provider-abstraction-default-anthropic.md)
   and [DEC-LLM-002](decisions/DEC-LLM-002-keys-flow-via-explicit-keys-object-no-env-reads.md).
 
+## for your role
+
+**Domain expert (procurement / supplier-risk analyst / 10-K reader).**
+The sample corpus at `data/sample_corpus/chunks.jsonl` holds 20 real
+SEC filing excerpts from 10 CIKs (AAPL, AMAT, ASML, NVDA, MU, INTC,
+AVGO, KLAC, LRCX, TSM) covering export controls, customer
+concentration, advanced packaging, supplier capacity, and long-lead
+equipment. Every cited span must verify verbatim against one of those
+chunks; the contract lives in
+[DEC-CIT-001](decisions/DEC-CIT-001-verbatim-span-verification-post-generation.md)
+and the verifier at `src/retrieval/citations.py`.
+
+**Science / eval-discipline reader.** Four suites gate every push.
+`retrieval_quality` recall@5 >= 0.70
+([retrieval_quality.yaml](eval_suites/retrieval_quality.yaml)),
+`citation_faithfulness` >= 0.95
+([citation_faithfulness.yaml](eval_suites/citation_faithfulness.yaml)),
+`supplier_risk_questions` answer-quality >= 0.80
+([supplier_risk_questions.yaml](eval_suites/supplier_risk_questions.yaml)),
+`refusal_cases` >= 0.85
+([refusal_cases.yaml](eval_suites/refusal_cases.yaml)). The
+methodology and the experiment-and-revert pattern live in
+[docs/eval-discipline.md](docs/eval-discipline.md); the canonical
+reverted experiment is
+[experiments/01-cross-encoder-rerank](experiments/01-cross-encoder-rerank/).
+
+**Curious visitor.** Open
+[supplier-risk-rag-agent.streamlit.app](https://supplier-risk-rag-agent.streamlit.app),
+paste your own Anthropic and OpenAI keys into the sidebar (they sit
+in `st.session_state` for the browser session and nowhere else), type
+a question, read a citation-verified answer. No keys are required to
+read the eval reports under `reports/`.
+
+**Engineer forking the pattern.** `src/retrieval/ranker.py` is the
+deterministic hybrid ranker (60% normalized BM25 + 25% cosine + 15%
+term-overlap). `src/retrieval/citations.py` is the post-hoc verbatim
+verifier. Six governance gates run under `scripts/` and the four eval
+suites under `src/evals/`. The coding-agent contract sits at
+[.agents/AGENTS.md](.agents/AGENTS.md); the BYOK keys flow is
+documented at
+[DEC-LLM-002](decisions/DEC-LLM-002-keys-flow-via-explicit-keys-object-no-env-reads.md).
+
+**Regulator / auditor.** Every claim points at a verbatim span; an
+unverified span gets refused, not paraphrased — see
+[DEC-CIT-001](decisions/DEC-CIT-001-verbatim-span-verification-post-generation.md).
+Citation shape changes stay append-only via the V2 dual-type path in
+[docs/citation-shape-evolution.md](docs/citation-shape-evolution.md),
+formalized as
+[DEC-CIT-002 amendment](decisions/DEC-CIT-002-amendment-reversibility-mitigation.md).
+Refusal contract: `eval_suites/refusal_cases.yaml`. Audit log:
+`ops/event-log/`. Release log:
+[ops/RELEASE_LEDGER.md](ops/RELEASE_LEDGER.md).
+
 ## who this is for
 
 - Procurement-curious builders who want a worked example of
