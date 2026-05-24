@@ -186,11 +186,12 @@ ALLOWLIST_RE = re.compile(r"voice_lint:allow\s+([A-Za-z0-9\-_ ]+)")
 # match any files are silently no-ops, so the lint stays green during
 # early phases and tightens as code lands.
 #
-# README.md, docs/**/*.md, and src/**/*.py predate the CDCP install;
-# their existing WARN-tier hits are tracked as cleanup work. The lint
-# scope here covers governance copy that landed with spec 0001. A later
-# pass widens TARGETS to include the legacy files once the WARN hits
-# are scrubbed or per-line allowlisted.
+# README.md and src/**/*.py predate the CDCP install; their existing
+# WARN-tier hits are tracked as cleanup work. The lint scope here
+# covers governance copy that landed with spec 0001 plus the polished
+# product docs under docs/. A later pass widens TARGETS to include the
+# remaining legacy files once the WARN hits are scrubbed or per-line
+# allowlisted.
 TARGETS = [
     "specs/**/*.md",
     "decisions/*.md",
@@ -198,6 +199,8 @@ TARGETS = [
     ".agents/AGENTS.md",
     ".agents/skills/**/*.md",
     "ops/*.md",
+    "docs/*.md",
+    "docs/**/*.md",
 ]
 
 SKIP_DIRS = {
