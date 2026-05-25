@@ -48,7 +48,7 @@ jobs:
             $DRY_RUN_FLAG
       - name: upload generated corpus
         if: ${{ github.event.inputs.dry_run != 'true' }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: edgar-generated-corpus-${{ github.run_id }}
           path: |
