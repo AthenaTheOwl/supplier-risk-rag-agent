@@ -1,4 +1,4 @@
-﻿# traceability: cognitive-delivery-control-plane
+# traceability: cognitive-delivery-control-plane
 
 | Requirement | Design surface | Planned proof | Owner role |
 |---|---|---|---|

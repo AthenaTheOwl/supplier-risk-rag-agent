@@ -1,4 +1,4 @@
-﻿# traceability: evals-and-thresholds
+# traceability: evals-and-thresholds
 
 | Requirement | Design surface | Decision | Planned proof | Owner role |
 |---|---|---|---|---|

@@ -1,4 +1,4 @@
-﻿# traceability: llm-provider
+# traceability: llm-provider
 
 | Requirement | Design surface | Decision | Planned proof | Owner role |
 |---|---|---|---|---|

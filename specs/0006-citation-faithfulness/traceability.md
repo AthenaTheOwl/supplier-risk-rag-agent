@@ -1,4 +1,4 @@
-﻿# traceability: citation-faithfulness
+# traceability: citation-faithfulness
 
 | Requirement | Design surface | Decision | Planned proof | Owner role |
 |---|---|---|---|---|

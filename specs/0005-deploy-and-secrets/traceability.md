@@ -1,4 +1,4 @@
-﻿# traceability: deploy-and-secrets
+# traceability: deploy-and-secrets
 
 | Requirement | Design surface | Decision | Planned proof | Owner role |
 |---|---|---|---|---|

@@ -1,4 +1,4 @@
-﻿# traceability: retrieval
+# traceability: retrieval
 
 | Requirement | Design surface | Decision | Planned proof | Owner role |
 |---|---|---|---|---|
