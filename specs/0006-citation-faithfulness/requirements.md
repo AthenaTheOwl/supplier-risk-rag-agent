@@ -58,3 +58,29 @@ Acceptance:
 - A wrong-shape input raises `TypeError` with the offending type
   name.
 - The verifier's chunk-id lookup runs against the unwrapped chunks.
+
+### R-CIT-004: investor rollup emits citation-backed risk cards or insufficiency states
+
+WHEN a visitor pastes a holdings list as ticker or CIK with optional
+weights, THE SYSTEM SHALL parse the list, map known holdings to the
+loaded SEC filing corpus, group portfolio exposure across supplier
+and source risk, customer concentration, export-control and trade
+risk, Taiwan geographic risk, and AI capacity or advanced packaging
+risk, and SHALL mark a risk card as supported only when at least one
+retrieved filing span verifies verbatim.
+
+Acceptance:
+- `parse_holdings` in `src/agent/portfolio_rollup.py` accepts one
+  holding per line, validates ticker/CIK syntax, normalizes weights,
+  and raises `HoldingParseError` with line-scoped messages for bad
+  input.
+- `build_portfolio_rollup` uses `HybridRanker.search` with per-CIK
+  filters and `verify_citations` before any risk evidence enters a
+  card.
+- Each `RiskCard` has either `status="supported"` with verified
+  citations or `status="insufficient_evidence"` with a refusal reason
+  and the holdings missing category evidence.
+- A portfolio with no matched corpus holding, or no supported card,
+  returns a refused `PortfolioRollup`.
+- `app.py` exposes the path in an `Investor rollup` tab and allows
+  markdown or JSON export without calling paid services.

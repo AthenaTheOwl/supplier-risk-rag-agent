@@ -30,6 +30,21 @@ Calls `verify_citations` after composing an answer. A verification
 failure means the answer cannot ship; the answerer treats it as a
 refusal trigger.
 
+### `src/agent/portfolio_rollup.py`
+
+Parses pasted investor holdings, resolves known ticker/CIK values
+against the loaded filing corpus, searches per holding and per risk
+category, then verifies each cited span with `verify_citations`
+before it enters a portfolio risk card. Cards without verified spans
+are marked `insufficient_evidence`; a portfolio with no matched
+holding or no supported card returns a refused rollup.
+
+### `app.py`
+
+Adds an `Investor rollup` tab beside the single-question path. The
+tab uses the same cached ranker, does not call an LLM or paid service,
+and exports the verified rollup as markdown or JSON.
+
 ### `eval_suites/citation_faithfulness.yaml` + `src/evals/runner.py`
 
 The eval suite runs 15 queries and computes the fraction of
