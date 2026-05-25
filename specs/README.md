@@ -24,6 +24,10 @@ Active specs:
 - `0006-citation-faithfulness/` — post-hoc verbatim-span verifier
   feeding the citation_faithfulness ≥ 0.95 gate (R-CIT-001..003).
 
+- `0007-edgar-refresh/` - CLI and monthly workflow refresh from
+  configured EDGAR CIKs into ignored generated corpus artifacts
+  (R-ING-001).
+
 Each spec folder carries the same six files:
 `requirements.md`, `design.md`, `tasks.md`, `acceptance.md`,
 `research.md`, `traceability.md`.

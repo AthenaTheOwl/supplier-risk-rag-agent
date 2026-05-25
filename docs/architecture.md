@@ -11,16 +11,21 @@ The repo is a local-first supplier-risk RAG agent over SEC filing excerpts.
    HTML when `--full-fetch` is used. It applies a custom `User-Agent`, a hard
    rate limit below 10 requests per second, retries transport failures, and
    caches raw HTML under `data/raw/`.
-4. `src.ingest.chunker` strips HTML and creates overlapping chunks while
+4. `src.ingest.edgar_refresh` selects the configured recent forms from
+   `data/sample_manifest.json`, downloads filing HTML through `SECClient`, and
+   writes generated JSONL chunks plus a refresh manifest under the ignored
+   `data/generated/edgar_corpus/` path. Dry runs stop after submissions
+   metadata and do not write output files.
+5. `src.ingest.chunker` strips HTML and creates overlapping chunks while
    preserving section metadata.
-5. `src.retrieval.ranker.HybridRanker` combines BM25, deterministic local
+6. `src.retrieval.ranker.HybridRanker` combines BM25, deterministic local
    hashing vectors, and lexical overlap. OpenAI embeddings can be injected for
    live experiments, but CI defaults to the local embedder.
-6. `src.agent.answerer.SupplierRiskAgent` retrieves excerpts, refuses weak or
+7. `src.agent.answerer.SupplierRiskAgent` retrieves excerpts, refuses weak or
    out-of-scope questions, and assembles cited answers.
-7. `src.retrieval.citations` verifies that each citation span exists verbatim in
+8. `src.retrieval.citations` verifies that each citation span exists verbatim in
    a retrieved chunk before the answer is returned.
-8. `app.py` exposes the workflow in Streamlit with BYOK keys.
+9. `app.py` exposes the workflow in Streamlit with BYOK keys.
 
 ## Citation contract
 

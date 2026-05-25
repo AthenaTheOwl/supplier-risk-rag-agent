@@ -123,6 +123,36 @@ packaging, supplier capacity, third-party foundries, and long-lead
 equipment risk. Full EDGAR fetch is gated by `--full-fetch` and
 applies an SEC-compliant `User-Agent` plus a rate cap.
 
+## EDGAR refresh
+
+The checked-in demo still reads `data/sample_corpus/` by default.
+Live EDGAR refresh is an opt-in corpus-management job that writes
+ignored generated artifacts under `data/generated/edgar_corpus/`.
+It does not commit fetched filings or change Streamlit startup
+behavior.
+
+```powershell
+# Plan the filings that would be downloaded; fetches submissions
+# metadata only and does not write output files.
+python -m uv run python -m src.ingest.run_ingest --refresh-edgar --dry-run
+
+# Build a generated JSONL corpus in the same shape as sample_corpus.
+python -m uv run python -m src.ingest.run_ingest --refresh-edgar `
+  --manifest data/sample_manifest.json `
+  --output data/generated/edgar_corpus/chunks.jsonl `
+  --refresh-manifest data/generated/edgar_corpus/manifest.json
+```
+
+Set `SEC_USER_AGENT` to a descriptive application/contact string
+before live refresh. SEC fair-access guidance asks automated clients
+to declare a User-Agent and stay below 10 requests/second:
+https://www.sec.gov/edgar/searchedgar/accessing-edgar-data.htm.
+The monthly GitHub Actions workflow `.github/workflows/edgar-refresh.yml`
+runs on the first day of each month, requires the repository variable
+`SEC_USER_AGENT`, writes generated corpus files to the ignored
+`data/generated/` path, and uploads them as a workflow artifact.
+No SEC API key is required.
+
 ## governance
 
 The repo runs under the Cognitive Delivery Control Plane (CDCP).
@@ -185,7 +215,7 @@ Streamlit - uv - pytest. Default Anthropic model is
 ## what's intentionally not built
 
 - Live EDGAR pull on every query. The default path reads the
-  sample corpus; `--full-fetch` is opt-in.
+  sample corpus; scheduled or CLI-driven refresh is opt-in.
 - Multi-tenant deployment. The hosted demo is single-tenant BYOK.
 - A learned reranker by default. See experiment 01 for why.
 - Real-time alerting. The agent answers queries; it does not
