@@ -8,6 +8,44 @@ updates:
     open-pull-requests-limit: 5
     labels:
       - dependencies
+    # Major-version bumps on the RAG/LLM client stack + pydantic + streamlit
+    # + embedding/vector stores require coordinated migrations. Pydantic 1->2
+    # was a famous trap; chromadb and sentence-transformers churn on majors;
+    # anthropic + openai SDK majors deprecate APIs. Minor + patch still flow
+    # through.
+    ignore:
+      - dependency-name: "anthropic"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "openai"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "pydantic"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "chromadb"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "sentence-transformers"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "streamlit"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "httpx"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "pyyaml"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "tiktoken"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "tenacity"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "beautifulsoup4"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "lxml"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "pytest"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "pytest-cov"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "mypy"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "ruff"
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: github-actions
     directory: "/"
