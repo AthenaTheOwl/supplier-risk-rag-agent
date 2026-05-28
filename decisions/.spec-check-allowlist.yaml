@@ -60,6 +60,19 @@ deferred:
   - id: R-EVL-015
     note: covered collectively by DEC-EVL-007-eval-runner-run-evidence-cross-checks
 
+  # Round-5 of the run-evidence rollout. R-EVL-016 is resolved by
+  # DEC-EVL-008 directly via the front-matter `requirement:` field.
+  # R-EVL-017..R-EVL-019 are resolved collectively by the same DEC;
+  # the DEC's `## coverage` section enumerates them. Round-5 amends
+  # DEC-EVL-007 with the equivalence-replay command shipped as
+  # `scripts/replay_run.py`.
+  - id: R-EVL-017
+    note: covered collectively by DEC-EVL-008-eval-replay-command
+  - id: R-EVL-018
+    note: covered collectively by DEC-EVL-008-eval-replay-command
+  - id: R-EVL-019
+    note: covered collectively by DEC-EVL-008-eval-replay-command
+
   # Deploy + secrets (spec 0005). R-DEP-001..R-DEP-003 are all
   # resolved by DEC-DEP-001..DEC-DEP-003 respectively. No deferred
   # entries remain for spec 0005.

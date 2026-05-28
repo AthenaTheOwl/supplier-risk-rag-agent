@@ -234,3 +234,80 @@ Acceptance:
 - `all_passed` on the Run is true iff `gates_failed` is empty.
 - Any mismatch fails the validator with a message naming both sides
   of the disagreement.
+
+### R-EVL-016: replay_run.py is the canonical equivalence-replay command
+
+WHEN an operator wants to verify that a recorded eval-suite Run
+still produces the same run-evidence signals against the current
+working tree, THE SYSTEM SHALL provide `scripts/replay_run.py
+--run-id run-<id>` as the canonical replay command. The command
+loads `ops/run-records/<run-id>.json` plus
+`ops/event-ledger/<run-id>.jsonl` and exits 1 with a clear
+diagnostic when either file is missing.
+
+Acceptance:
+- A `--run-id` that matches no file under `ops/run-records/` exits
+  1 with a `Run record not found` message naming the missing path.
+- A Run record present without a matching ledger file exits 1 with
+  an `event ledger not found` message.
+- The command honors the same
+  `SUPPLIER_RISK_RAG_RUN_RECORDS_DIR` and
+  `SUPPLIER_RISK_RAG_EVENT_LEDGER_DIR` env vars the runner uses,
+  plus `SUPPLIER_RISK_RAG_REPLAY_RECORDS_DIR` for the per-replay
+  records dir.
+
+### R-EVL-017: replay is HEAD-strict against sandbox_image_ref
+
+WHEN `scripts/replay_run.py` runs, THE SYSTEM SHALL parse the SHA
+out of the recorded `Run.sandbox_image_ref` and SHALL exit 1 when
+the current `git rev-parse HEAD` does not equal that SHA.
+
+Acceptance:
+- HEAD mismatch produces a stderr line carrying both the recorded
+  SHA and the current HEAD plus a `git checkout <sha>` hint.
+- A Run record whose `sandbox_image_ref` does not parse (missing
+  `@` separator, empty SHA) exits 1 with a clear message instead
+  of running the comparison against an unpinned commit.
+- HEAD match proceeds to the suite re-execution.
+
+### R-EVL-018: replay compares three replay-equivalence signals
+
+WHEN `scripts/replay_run.py` reaches the comparison step, THE
+SYSTEM SHALL compare `prompt_snapshot_hash`,
+`tool_schemas_snapshot_hash`, and `gate_results_summary` between
+the recorded Run and the fresh re-run. `replay_equivalent` is true
+iff all three match; the command exits 1 on any divergence.
+
+Acceptance:
+- A mutated `prompt_snapshot_hash` on the recorded Run trips
+  divergence and the printed summary names
+  `prompt_snapshot_hash: MISMATCH`.
+- A mutated `gate_results_summary` on the recorded Run trips
+  divergence and the printed summary names
+  `gate_results_summary: MISMATCH`.
+- The comparison treats `gate_results_summary.gates_passed` and
+  `gates_failed` as sets (sort-insensitive), and the `all_passed`
+  bool as a strict equality.
+
+### R-EVL-019: replay emits run.evidence.replayed into a new ledger file
+
+WHEN `scripts/replay_run.py` finishes the comparison, THE SYSTEM
+SHALL append one `run.evidence.replayed` event to a NEW per-replay
+ledger file at
+`ops/event-ledger/replay-<run-id>-<ISO-timestamp>.jsonl` and write
+a detailed comparison report at
+`ops/replay-records/<run-id>/<replay-event-id>.json`. The original
+ledger file and the original Run record SHALL NOT be modified.
+
+Acceptance:
+- The per-replay ledger carries exactly one event whose
+  `type == "run.evidence.replayed"` and whose payload carries
+  `run_id`, `packet_ref`, `replay_equivalent`, and
+  `replay_method == "equivalence"`.
+- The event validates against the `run.evidence.replayed` branch of
+  the cached `event.schema.json`.
+- The comparison report carries per-signal `recorded`/`fresh`
+  values plus the per-signal `match` flag.
+- The source ledger file at
+  `ops/event-ledger/<run-id>.jsonl` is byte-identical before and
+  after the replay command runs.
