@@ -85,3 +85,90 @@ Acceptance:
 - A reverted experiment (such as the cross-encoder reranker) is
   recorded as a release entry that names the gate that failed.
 - Future automation may parse the ledger; today it is human-edited.
+
+### R-EVL-006: eval-suite runner emits a conformant Event ledger
+
+WHEN the eval-suite runner executes any of the four suites, THE
+SYSTEM SHALL append an event-ledger file at
+`ops/event-ledger/<run-id>.jsonl` whose lines validate against the
+cached `ops/schemas-cache/event.schema.json`.
+
+Acceptance:
+- Each suite execution writes at least one `pipeline.start`, one
+  `tool.call.completed`, one `gate.check.passed` or
+  `gate.check.failed`, and one `gate.run.evidence_recorded` event.
+- Every line in the JSONL file parses as JSON and conforms to the
+  cached event schema.
+- The `run_id` field on each event matches the file name.
+
+### R-EVL-007: eval-suite runner emits a conformant Run record
+
+WHEN the eval-suite runner finishes a suite execution, THE SYSTEM
+SHALL write `ops/run-records/<run-id>.json` whose body validates
+against the cached `ops/schemas-cache/run.schema.json`.
+
+Acceptance:
+- Required fields populated: `id`, `spec_id` = the suite YAML path,
+  `agent_id` = `<llm-provider>:<llm-model>`, `runtime` =
+  `supplier-risk-rag-agent-evals`, `workspace_id` = the repo path,
+  `started_at`, `finished_at`, `status` (`done` or `failed`),
+  `inputs` (one `eval_suite` entry).
+- The validator gate `scripts/validate_run_evidence.py` exits zero
+  against the produced file.
+
+### R-EVL-008: prompt and tool-schema hashes are always populated
+
+WHEN the eval-suite runner emits a Run record, THE SYSTEM SHALL
+populate the `prompt_snapshot_hash` and `tool_schemas_snapshot_hash`
+fields with SHA-256 digests of canonicalized prompt and retrieval
+or LLM surface inputs.
+
+Acceptance:
+- `prompt_snapshot_hash` covers the extraction, answer, and refusal
+  prompt files under `src/agent/prompts/`.
+- `tool_schemas_snapshot_hash` covers the ranker config (weights and
+  `top_k`), the LLM provider and model, the embedding model, and the
+  reranker config when one is in use.
+- Both digests match the schema pattern `^[a-f0-9]{64}$`.
+
+### R-EVL-009: sandbox_image_ref pins the producing commit
+
+WHEN the eval-suite runner emits a Run record, THE SYSTEM SHALL
+populate `sandbox_image_ref` with `<repo-path>@<HEAD-SHA>` so a
+reviewer can pin the replay context to the producing commit.
+
+Acceptance:
+- The field is populated whenever the runner can resolve `git
+  rev-parse HEAD` against the repo working tree.
+- The field is omitted (not populated with placeholder text) when
+  `git rev-parse` fails.
+
+### R-EVL-010: gate_results_summary aggregates fired gate events
+
+WHEN the eval-suite runner emits a Run record, THE SYSTEM SHALL
+populate `gate_results_summary` from the `gate.check.passed` and
+`gate.check.failed` events fired during the suite execution.
+
+Acceptance:
+- Names in `gates_passed` and `gates_failed` come from the
+  `payload.gate_name` field of each event.
+- `all_passed` is true iff `gates_failed` is empty.
+- For the four shipped suites the gate names are
+  `recall_at_5_threshold`,
+  `citation_faithfulness_threshold`,
+  `answer_quality_threshold`,
+  `refusal_precision_threshold`.
+
+### R-EVL-011: validate_run_evidence gates commits
+
+WHEN a commit lands on the main branch, THE SYSTEM SHALL run
+`scripts/validate_run_evidence.py` as a CI gate and SHALL block the
+merge if any ledger line or Run record fails to validate.
+
+Acceptance:
+- The validator runs in `.github/workflows/gates.yml` alongside
+  `spec_check.py`, `validate_decisions.py`, and the others.
+- A schema-violating record produces exit code 1 with the violation
+  list on stderr.
+- The validator runs offline against the cached schemas; no network
+  call is required.

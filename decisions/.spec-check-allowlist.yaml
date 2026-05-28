@@ -29,8 +29,23 @@ deferred:
   # entries remain for spec 0003.
 
   # Eval suites and thresholds (spec 0004). R-EVL-001..R-EVL-005 are
-  # all resolved by DEC-EVL-001..DEC-EVL-005 respectively. No deferred
-  # entries remain for spec 0004.
+  # all resolved by DEC-EVL-001..DEC-EVL-005 respectively.
+  # R-EVL-006 is resolved by
+  # DEC-EVL-006-eval-runner-emits-conformant-run-evidence directly.
+  # R-EVL-007..R-EVL-011 are resolved collectively by the same DEC;
+  # the DEC's `## coverage` section enumerates them. Phase D of the
+  # run-evidence rollout (athena-site DEC-CDCP-011 + procurement-lab
+  # DEC-FACTORY-007 precedents).
+  - id: R-EVL-007
+    note: covered collectively by DEC-EVL-006-eval-runner-emits-conformant-run-evidence
+  - id: R-EVL-008
+    note: covered collectively by DEC-EVL-006-eval-runner-emits-conformant-run-evidence
+  - id: R-EVL-009
+    note: covered collectively by DEC-EVL-006-eval-runner-emits-conformant-run-evidence
+  - id: R-EVL-010
+    note: covered collectively by DEC-EVL-006-eval-runner-emits-conformant-run-evidence
+  - id: R-EVL-011
+    note: covered collectively by DEC-EVL-006-eval-runner-emits-conformant-run-evidence
 
   # Deploy + secrets (spec 0005). R-DEP-001..R-DEP-003 are all
   # resolved by DEC-DEP-001..DEC-DEP-003 respectively. No deferred

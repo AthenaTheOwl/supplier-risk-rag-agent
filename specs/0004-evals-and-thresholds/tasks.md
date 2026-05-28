@@ -19,8 +19,9 @@ IDs and pairs the first one with a DEC.
 
 - [x] `decisions/DEC-EVL-001-four-suite-eval-gate-with-thresholds.md`
   resolves R-EVL-001.
-- [ ] R-EVL-002..005 land in `decisions/.spec-check-allowlist.yaml`
-  under `deferred:` until a backfill pass writes their DECs.
+- [x] R-EVL-002..005 resolved by their per-ID DECs.
+- [x] `decisions/DEC-EVL-006-eval-runner-emits-conformant-run-evidence.md`
+  resolves R-EVL-006..011 (Phase D of the run-evidence rollout).
 
 ## Code under this spec (already shipped, not changed by this spec)
 
@@ -28,14 +29,27 @@ IDs and pairs the first one with a DEC.
 - `eval_suites/citation_faithfulness.yaml`
 - `eval_suites/supplier_risk_questions.yaml`
 - `eval_suites/refusal_cases.yaml`
-- `src/evals/runner.py`
 - `.github/workflows/evals.yml`
+
+## Code added under R-EVL-006..011 (Phase D run-evidence rollout)
+
+- `src/evals/run_evidence.py` (new emitter module)
+- `src/evals/runner.py` (Run + Event ledger emission wired into the
+  per-suite loop)
+- `scripts/validate_run_evidence.py` (validator gate)
+- `ops/schemas-cache/event.schema.json` (cached cross-repo schema)
+- `tests/test_run_evidence.py` + `tests/test_run_evidence_integration.py`
+- `.github/workflows/gates.yml` (validate_run_evidence step)
+- `ops/event-ledger/<run-id>.jsonl` + `ops/run-records/<run-id>.json`
+  (sample artifacts from one suite execution)
 
 ## Verification
 
-- [x] `python scripts/spec_check.py` exits 0 with R-EVL-001 resolved
-  and R-EVL-002..005 deferred.
-- [x] `python scripts/validate_decisions.py` exits 0 with the new DEC
-  parsing clean.
+- [x] `python scripts/spec_check.py` exits 0 with R-EVL-001..011
+  resolved.
+- [x] `python scripts/validate_decisions.py` exits 0 with the new
+  DEC parsing clean.
+- [x] `python scripts/validate_run_evidence.py` exits 0 against the
+  produced ledger + Run record.
 - [x] `uv run python -m src.evals.runner --suite all` stays green
   across all four suites.

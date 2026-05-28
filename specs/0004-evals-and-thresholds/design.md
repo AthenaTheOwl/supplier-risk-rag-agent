@@ -58,3 +58,29 @@ retrieval and verification.
   `refusal_cases` fails.
 - A model-id change in `src/config.py` shifts answer wording in a
   way that drops required terms: `supplier_risk_questions` fails.
+
+## Run-evidence emission layer (R-EVL-006..011)
+
+```mermaid
+flowchart LR
+  RUN["src/evals/runner.py"] --> EMIT["src/evals/run_evidence.py"]
+  EMIT --> LED["ops/event-ledger/&lt;run-id&gt;.jsonl"]
+  EMIT --> REC["ops/run-records/&lt;run-id&gt;.json"]
+  LED --> VAL["scripts/validate_run_evidence.py"]
+  REC --> VAL
+  VAL --> CI["gates.yml step"]
+```
+
+Per suite execution the runner emits one Run record (conformant to
+the amended `run.schema.json` with the six replay-equivalence
+fields) plus a JSONL ledger of `pipeline.start`,
+`tool.call.completed`, `gate.check.passed` or `gate.check.failed`,
+and `gate.run.evidence_recorded` events. The validator gate enforces
+schema conformance on every CI run.
+
+`prompt_snapshot_hash` and `tool_schemas_snapshot_hash` are always
+populated. `sandbox_image_ref` is populated from the repo HEAD.
+`gate_results_summary` is aggregated from the fired `gate.check.*`
+events. `determinism` is populated only when the suite YAML carries
+an explicit block. `checkpoint_ref` is omitted because the eval
+runner runs in-process with no managed-task checkpoint store.
