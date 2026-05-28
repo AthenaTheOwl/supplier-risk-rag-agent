@@ -225,7 +225,7 @@ def _record_suite_run(
         actor_kind=ACTOR_KIND,
         actor_id=ACTOR_ID,
         payload={
-            "tool_id": _tool_id_for_suite(suite_name),
+            "tool_name": _tool_name_for_suite(suite_name),
             "status": "ok",
             "case_count": len(cases),
             "gate_metric": metrics["gate_metric"],
@@ -291,29 +291,56 @@ def _record_suite_run(
     run.update(fields.fields)
     emit_run(run, record_path)
 
-    # 5) gate.run.evidence_recorded — the terminal event so the
-    # validator can cross-check that a Run record exists.
+    # 5) pipeline.done — typed terminal event carrying the gate
+    # summary cloned from the Run record. Emitted before
+    # gate.run.evidence_recorded so the evidence event remains the
+    # last line in the ledger (the validator scans terminal events as
+    # the chain anchor).
+    pipeline_done = make_event(
+        event_type="pipeline.done",
+        actor_kind=ACTOR_KIND,
+        actor_id=ACTOR_ID,
+        payload={
+            "status": status,
+            "gate_results_summary": fields.fields["gate_results_summary"],
+        },
+        run_id=run_id,
+        spec_id=spec_id,
+        parent_event_id=gate_event["event_id"],
+    )
+    emit_event(pipeline_done, ledger_path)
+
+    # 6) gate.run.evidence_recorded — the terminal evidence event so
+    # the validator can cross-check that a Run record exists. The
+    # ``run_id`` lives on both the envelope and the payload per the
+    # typed payload schema (athena-site ``event.schema.json``).
     evidence_event = make_event(
         event_type="gate.run.evidence_recorded",
         actor_kind=ACTOR_KIND,
         actor_id=ACTOR_ID,
         payload={
-            "fields_populated": list(fields.populated),
+            "run_id": run_id,
+            "fields_populated": sorted(fields.populated),
             "record_path": record_path.relative_to(_repo_root()).as_posix()
             if record_path.is_relative_to(_repo_root())
             else record_path.as_posix(),
         },
         run_id=run_id,
         spec_id=spec_id,
-        parent_event_id=gate_event["event_id"],
+        parent_event_id=pipeline_done["event_id"],
     )
     emit_event(evidence_event, ledger_path)
 
     return run_id, record_path
 
 
-def _tool_id_for_suite(suite_name: str) -> str:
-    """Map a suite to the dotted tool surface it exercises."""
+def _tool_name_for_suite(suite_name: str) -> str:
+    """Map a suite to the dotted tool surface it exercises.
+
+    The returned string lands in ``tool.call.completed.payload.tool_name``
+    per the typed event schema (athena-site ``event.schema.json``
+    requires the ``tool_name`` field on this event type).
+    """
     return {
         "retrieval_quality": "ranker.search",
         "citation_faithfulness": "agent.answer+citation.verify",

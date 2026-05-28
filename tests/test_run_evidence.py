@@ -122,7 +122,7 @@ def test_emit_event_writes_valid_jsonl(tmp_path: Path) -> None:
         event_type="tool.call.completed",
         actor_kind="role",
         actor_id="science.proof-gate-runner",
-        payload={"tool_id": "ranker.search", "status": "ok", "n_results": 5},
+        payload={"tool_name": "ranker.search", "status": "ok", "n_results": 5},
         run_id="run-abc",
     )
     emit_event(event, ledger)
@@ -130,7 +130,7 @@ def test_emit_event_writes_valid_jsonl(tmp_path: Path) -> None:
     assert text.endswith("\n")
     parsed = json.loads(text.splitlines()[0])
     assert parsed["type"] == "tool.call.completed"
-    assert parsed["payload"]["tool_id"] == "ranker.search"
+    assert parsed["payload"]["tool_name"] == "ranker.search"
     assert parsed["run_id"] == "run-abc"
 
 
@@ -140,7 +140,11 @@ def test_emit_event_appends_a_second_line(tmp_path: Path) -> None:
         event_type="pipeline.start",
         actor_kind="system",
         actor_id="supplier-risk-rag-agent-evals",
-        payload={"suite": "refusal_cases"},
+        payload={
+            "suite": "refusal_cases",
+            "prompt_snapshot_hash": compute_sha256("plan|answer|refuse"),
+            "tool_schemas_snapshot_hash": compute_sha256("toolset"),
+        },
         run_id="run-abc",
     )
     b = make_event(
@@ -212,7 +216,7 @@ def test_aggregate_gate_results_returns_none_when_no_gate_events() -> None:
         event_type="tool.call.completed",
         actor_kind="system",
         actor_id="supplier-risk-rag-agent-evals",
-        payload={"tool_id": "ranker.search", "status": "ok"},
+        payload={"tool_name": "ranker.search", "status": "ok"},
         run_id="run-1",
     )
     assert aggregate_gate_results([other]) is None
