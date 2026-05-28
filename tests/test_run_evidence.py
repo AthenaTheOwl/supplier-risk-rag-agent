@@ -412,6 +412,270 @@ def test_load_prompt_files_handles_missing_directory(tmp_path: Path) -> None:
     assert refusal == ""
 
 
+# --------------------------------------------------------------------- validator
+# Round 3: positive + negative cross-check tests for
+# scripts/validate_run_evidence.py. Each test stages a synthetic
+# ops/event-ledger + ops/run-records pair under tmp_path and drives
+# the validator as a subprocess, mirroring how the gates.yml workflow
+# invokes it.
+
+
+def _validator_path() -> Path:
+    return ROOT / "scripts" / "validate_run_evidence.py"
+
+
+def _seed_schemas_cache(synthetic_root: Path) -> None:
+    """Copy the cached schemas into a synthetic repo root."""
+    import shutil
+
+    (synthetic_root / "ops").mkdir(exist_ok=True)
+    shutil.copytree(
+        ROOT / "ops" / "schemas-cache",
+        synthetic_root / "ops" / "schemas-cache",
+    )
+    shutil.copytree(ROOT / "scripts", synthetic_root / "scripts")
+
+
+def _write_artifacts(
+    synthetic_root: Path,
+    run_id: str,
+    *,
+    events: list[dict[str, object]],
+    run_record: dict[str, object],
+) -> None:
+    ledger_dir = synthetic_root / "ops" / "event-ledger"
+    record_dir = synthetic_root / "ops" / "run-records"
+    ledger_dir.mkdir(parents=True, exist_ok=True)
+    record_dir.mkdir(parents=True, exist_ok=True)
+    ledger_path = ledger_dir / f"{run_id}.jsonl"
+    with ledger_path.open("w", encoding="utf-8") as handle:
+        for event in events:
+            handle.write(json.dumps(event, sort_keys=True))
+            handle.write("\n")
+    record_path = record_dir / f"{run_id}.json"
+    record_path.write_text(
+        json.dumps(run_record, sort_keys=True, indent=2) + "\n",
+        encoding="utf-8",
+    )
+
+
+def _well_formed_pair(run_id: str = "run-positive001") -> tuple[
+    list[dict[str, object]], dict[str, object]
+]:
+    """Produce a positive (validator-passing) ledger + Run pair.
+
+    Hash values are stable so the cross-check sees equality between
+    Run record and pipeline.start payload.
+    """
+    prompt_hash = compute_sha256("plan|answer|refuse")
+    tools_hash = compute_sha256("toolset")
+    start_id = "00000000-0000-4000-8000-000000000001"
+    tool_id = "00000000-0000-4000-8000-000000000002"
+    gate_id = "00000000-0000-4000-8000-000000000003"
+    done_id = "00000000-0000-4000-8000-000000000004"
+    evidence_id = "00000000-0000-4000-8000-000000000005"
+    started_at = "2026-05-28T12:00:00Z"
+    finished_at = "2026-05-28T12:01:00Z"
+
+    events: list[dict[str, object]] = [
+        {
+            "event_id": start_id,
+            "type": "pipeline.start",
+            "created_at": started_at,
+            "actor": {"kind": "system", "id": "supplier-risk-rag-agent-evals"},
+            "payload": {
+                "suite": "refusal_cases",
+                "prompt_snapshot_hash": prompt_hash,
+                "tool_schemas_snapshot_hash": tools_hash,
+            },
+            "run_id": run_id,
+        },
+        {
+            "event_id": tool_id,
+            "type": "tool.call.completed",
+            "created_at": started_at,
+            "actor": {"kind": "system", "id": "supplier-risk-rag-agent-evals"},
+            "payload": {"tool_name": "agent.answer+refusal.decision"},
+            "run_id": run_id,
+            "parent_event_id": start_id,
+        },
+        {
+            "event_id": gate_id,
+            "type": "gate.check.passed",
+            "created_at": started_at,
+            "actor": {"kind": "system", "id": "supplier-risk-rag-agent-evals"},
+            "payload": {"gate_name": "refusal_precision_threshold"},
+            "run_id": run_id,
+            "parent_event_id": tool_id,
+        },
+        {
+            "event_id": done_id,
+            "type": "pipeline.done",
+            "created_at": finished_at,
+            "actor": {"kind": "system", "id": "supplier-risk-rag-agent-evals"},
+            "payload": {
+                "status": "done",
+                "gate_results_summary": {
+                    "gates_passed": ["refusal_precision_threshold"],
+                    "gates_failed": [],
+                    "all_passed": True,
+                },
+            },
+            "run_id": run_id,
+            "parent_event_id": gate_id,
+        },
+        {
+            "event_id": evidence_id,
+            "type": "gate.run.evidence_recorded",
+            "created_at": finished_at,
+            "actor": {"kind": "system", "id": "supplier-risk-rag-agent-evals"},
+            "payload": {
+                "run_id": run_id,
+                "fields_populated": [
+                    "gate_results_summary",
+                    "prompt_snapshot_hash",
+                    "sandbox_image_ref",
+                    "tool_schemas_snapshot_hash",
+                ],
+            },
+            "run_id": run_id,
+            "parent_event_id": done_id,
+        },
+    ]
+
+    run_record: dict[str, object] = {
+        "id": run_id,
+        "spec_id": "eval_suites/refusal_cases.yaml",
+        "agent_id": "anthropic:claude-sonnet-4-6",
+        "runtime": "supplier-risk-rag-agent-evals",
+        "workspace_id": ROOT.as_posix(),
+        "started_at": started_at,
+        "finished_at": finished_at,
+        "status": "done",
+        "inputs": [{"kind": "eval_suite", "ref": "eval_suites/refusal_cases.yaml"}],
+        "outputs": [],
+        "prompt_snapshot_hash": prompt_hash,
+        "tool_schemas_snapshot_hash": tools_hash,
+        "sandbox_image_ref": f"{ROOT.as_posix()}@deadbeefcafe",
+        "gate_results_summary": {
+            "gates_passed": ["refusal_precision_threshold"],
+            "gates_failed": [],
+            "all_passed": True,
+        },
+    }
+    return events, run_record
+
+
+def _drive_validator(synthetic_root: Path) -> subprocess.CompletedProcess[str]:
+    validator = synthetic_root / "scripts" / "validate_run_evidence.py"
+    return subprocess.run(
+        [sys.executable, str(validator)],
+        cwd=str(synthetic_root),
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+
+# Import sys for the subprocess driver above. Kept local to the
+# validator tests so the rest of the module's unit tests stay
+# import-only.
+import sys  # noqa: E402
+
+
+def test_validator_passes_on_well_formed_pair(tmp_path: Path) -> None:
+    _seed_schemas_cache(tmp_path)
+    events, run = _well_formed_pair()
+    _write_artifacts(tmp_path, "run-positive001", events=events, run_record=run)
+    result = _drive_validator(tmp_path)
+    assert result.returncode == 0, (
+        f"validator unexpectedly failed: stderr={result.stderr!r}"
+    )
+
+
+def test_validator_fails_when_done_missing_required_field(tmp_path: Path) -> None:
+    _seed_schemas_cache(tmp_path)
+    events, run = _well_formed_pair("run-negative001")
+    # Drop sandbox_image_ref on a done Run.
+    del run["sandbox_image_ref"]
+    # Keep the evidence event payload consistent with the new
+    # populated-fields set so this test isolates the
+    # required-for-done failure.
+    for event in events:
+        if event["type"] == "gate.run.evidence_recorded":
+            event["payload"]["fields_populated"] = [
+                "gate_results_summary",
+                "prompt_snapshot_hash",
+                "tool_schemas_snapshot_hash",
+            ]
+    _write_artifacts(tmp_path, "run-negative001", events=events, run_record=run)
+    result = _drive_validator(tmp_path)
+    assert result.returncode == 1
+    assert "sandbox_image_ref" in result.stderr
+    assert "status=done" in result.stderr
+
+
+def test_validator_fails_on_prompt_hash_mismatch(tmp_path: Path) -> None:
+    _seed_schemas_cache(tmp_path)
+    events, run = _well_formed_pair("run-negative002")
+    run["prompt_snapshot_hash"] = compute_sha256("a-different-prompt")
+    _write_artifacts(tmp_path, "run-negative002", events=events, run_record=run)
+    result = _drive_validator(tmp_path)
+    assert result.returncode == 1
+    assert "prompt_snapshot_hash mismatch" in result.stderr
+
+
+def test_validator_fails_on_tool_schemas_hash_mismatch(tmp_path: Path) -> None:
+    _seed_schemas_cache(tmp_path)
+    events, run = _well_formed_pair("run-negative003")
+    run["tool_schemas_snapshot_hash"] = compute_sha256("a-different-toolset")
+    _write_artifacts(tmp_path, "run-negative003", events=events, run_record=run)
+    result = _drive_validator(tmp_path)
+    assert result.returncode == 1
+    assert "tool_schemas_snapshot_hash mismatch" in result.stderr
+
+
+def test_validator_fails_on_fields_populated_mismatch(tmp_path: Path) -> None:
+    _seed_schemas_cache(tmp_path)
+    events, run = _well_formed_pair("run-negative004")
+    # Drop determinism + claim it in the evidence payload.
+    for event in events:
+        if event["type"] == "gate.run.evidence_recorded":
+            event["payload"]["fields_populated"] = [
+                "determinism",
+                "gate_results_summary",
+                "prompt_snapshot_hash",
+                "sandbox_image_ref",
+                "tool_schemas_snapshot_hash",
+            ]
+    _write_artifacts(tmp_path, "run-negative004", events=events, run_record=run)
+    result = _drive_validator(tmp_path)
+    assert result.returncode == 1
+    assert "fields_populated" in result.stderr
+
+
+def test_validator_fails_on_gate_summary_mismatch(tmp_path: Path) -> None:
+    _seed_schemas_cache(tmp_path)
+    events, run = _well_formed_pair("run-negative005")
+    # Run says one gate passed; ledger event-stream is empty of
+    # gate.check.* events.
+    events = [e for e in events if e["type"] != "gate.check.passed"]
+    _write_artifacts(tmp_path, "run-negative005", events=events, run_record=run)
+    result = _drive_validator(tmp_path)
+    assert result.returncode == 1
+    assert "gate_results_summary mismatch" in result.stderr
+
+
+def test_validator_fails_when_done_missing_evidence_event(tmp_path: Path) -> None:
+    _seed_schemas_cache(tmp_path)
+    events, run = _well_formed_pair("run-negative006")
+    events = [e for e in events if e["type"] != "gate.run.evidence_recorded"]
+    _write_artifacts(tmp_path, "run-negative006", events=events, run_record=run)
+    result = _drive_validator(tmp_path)
+    assert result.returncode == 1
+    assert "no gate.run.evidence_recorded" in result.stderr
+
+
 # End of unit tests. The runner integration tests live in
 # tests/test_run_evidence_integration.py so this file stays
 # import-only and never shells out.
