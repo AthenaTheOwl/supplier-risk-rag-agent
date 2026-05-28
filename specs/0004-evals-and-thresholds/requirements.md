@@ -172,3 +172,65 @@ Acceptance:
   list on stderr.
 - The validator runs offline against the cached schemas; no network
   call is required.
+
+### R-EVL-012: Run records carry required-for-done replay fields
+
+WHEN the eval-suite runner finishes a suite execution with
+`status == "done"`, THE SYSTEM SHALL populate `prompt_snapshot_hash`,
+`tool_schemas_snapshot_hash`, `sandbox_image_ref`, and
+`gate_results_summary` on the Run record.
+
+Acceptance:
+- A Run with `status == "done"` and any of those four fields missing
+  or empty fails `scripts/validate_run_evidence.py` with a clear
+  message naming the absent field.
+- Other Run statuses (`running`, `needs_review`, `failed`,
+  `cancelled`) are not subject to this rule; absence of replay fields
+  on a non-done Run is acceptable.
+
+### R-EVL-013: a done Run has a terminal evidence event
+
+WHEN a Run record's `status` is `done`, THE SYSTEM SHALL have at
+least one `gate.run.evidence_recorded` event in the matching
+`ops/event-ledger/<run-id>.jsonl` file.
+
+Acceptance:
+- A done Run whose ledger lacks any `gate.run.evidence_recorded`
+  event fails `scripts/validate_run_evidence.py`.
+- The validator names the run_id and the missing event type in the
+  failure output.
+
+### R-EVL-014: snapshot hashes match between Run and pipeline.start
+
+WHEN the eval-suite runner emits a Run record and the matching
+`pipeline.start` event, THE SYSTEM SHALL ensure
+`Run.prompt_snapshot_hash` equals the event payload's
+`prompt_snapshot_hash`, `Run.tool_schemas_snapshot_hash` equals the
+event payload's `tool_schemas_snapshot_hash`, and the
+`gate.run.evidence_recorded.payload.fields_populated` set equals the
+set of replay-equivalence fields populated on the Run record.
+
+Acceptance:
+- A Run whose `prompt_snapshot_hash` disagrees with the
+  `pipeline.start` payload fails the validator.
+- A Run whose `tool_schemas_snapshot_hash` disagrees with the
+  `pipeline.start` payload fails the validator.
+- An `gate.run.evidence_recorded` event whose `fields_populated`
+  declares a field that the Run record does not carry (or omits a
+  field that the Run record does carry) fails the validator.
+
+### R-EVL-015: gate_results_summary matches the gate.check.* rollup
+
+WHEN the eval-suite runner emits a Run record, THE SYSTEM SHALL
+ensure `Run.gate_results_summary` matches the rollup of
+`gate.check.passed` and `gate.check.failed` events fired in the
+matching ledger.
+
+Acceptance:
+- `gates_passed` on the Run equals the sorted set of `gate_name`
+  values from `gate.check.passed` events.
+- `gates_failed` on the Run equals the sorted set of `gate_name`
+  values from `gate.check.failed` events.
+- `all_passed` on the Run is true iff `gates_failed` is empty.
+- Any mismatch fails the validator with a message naming both sides
+  of the disagreement.

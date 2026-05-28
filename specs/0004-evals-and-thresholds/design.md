@@ -84,3 +84,28 @@ populated. `sandbox_image_ref` is populated from the repo HEAD.
 events. `determinism` is populated only when the suite YAML carries
 an explicit block. `checkpoint_ref` is omitted because the eval
 runner runs in-process with no managed-task checkpoint store.
+
+## Round-3 cross-checks (R-EVL-012..015)
+
+The validator extends schema conformance with four cross-checks that
+tie the Run record to its event ledger:
+
+| # | Cross-check | Validator message on failure |
+|---|---|---|
+| 1 | `Run.prompt_snapshot_hash == pipeline.start.payload.prompt_snapshot_hash` | `prompt_snapshot_hash mismatch (Run=... != pipeline.start=...)` |
+| 2 | `Run.tool_schemas_snapshot_hash == pipeline.start.payload.tool_schemas_snapshot_hash` | `tool_schemas_snapshot_hash mismatch (Run=... != pipeline.start=...)` |
+| 3 | `gate.run.evidence_recorded.payload.fields_populated == sorted set of replay fields populated on Run` | `gate.run.evidence_recorded fields_populated [...] does not match replay-equivalence fields populated on Run [...]` |
+| 4 | `Run.gate_results_summary == aggregate(gate.check.* events in ledger)` | `gate_results_summary mismatch (Run=... != events=...)` |
+
+A Run whose `status == "done"` must also populate the four
+required-for-done fields (`prompt_snapshot_hash`,
+`tool_schemas_snapshot_hash`, `sandbox_image_ref`,
+`gate_results_summary`) and must have at least one terminal
+`gate.run.evidence_recorded` event in its ledger. Each rule yields a
+distinct validator message so a CI failure points one-to-one at the
+broken discipline rule.
+
+The runner emits a `pipeline.done` event before
+`gate.run.evidence_recorded` so a downstream consumer that scans on
+the typed `pipeline.done` payload finds the gate rollup without
+walking the Run record.

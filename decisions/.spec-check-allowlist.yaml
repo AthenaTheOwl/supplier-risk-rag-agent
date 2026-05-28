@@ -47,6 +47,19 @@ deferred:
   - id: R-EVL-011
     note: covered collectively by DEC-EVL-006-eval-runner-emits-conformant-run-evidence
 
+  # Round-3 of the run-evidence rollout. R-EVL-012 is resolved by
+  # DEC-EVL-007 directly via the front-matter `requirement:` field.
+  # R-EVL-013..R-EVL-015 are resolved collectively by the same DEC;
+  # the DEC's `## coverage` section enumerates them. Round-3 amends
+  # DEC-EVL-006 with Run-level required-for-done enforcement plus
+  # four cross-checks tying the Run record to its event ledger.
+  - id: R-EVL-013
+    note: covered collectively by DEC-EVL-007-eval-runner-run-evidence-cross-checks
+  - id: R-EVL-014
+    note: covered collectively by DEC-EVL-007-eval-runner-run-evidence-cross-checks
+  - id: R-EVL-015
+    note: covered collectively by DEC-EVL-007-eval-runner-run-evidence-cross-checks
+
   # Deploy + secrets (spec 0005). R-DEP-001..R-DEP-003 are all
   # resolved by DEC-DEP-001..DEC-DEP-003 respectively. No deferred
   # entries remain for spec 0005.

@@ -7,7 +7,7 @@ IDs and pairs the first one with a DEC.
 ## Spec ledger
 
 - [x] `specs/0004-evals-and-thresholds/requirements.md` with
-  R-EVL-001..005.
+  R-EVL-001..015.
 - [x] `specs/0004-evals-and-thresholds/design.md`.
 - [x] `specs/0004-evals-and-thresholds/tasks.md` (this file).
 - [x] `specs/0004-evals-and-thresholds/acceptance.md`.
@@ -22,6 +22,10 @@ IDs and pairs the first one with a DEC.
 - [x] R-EVL-002..005 resolved by their per-ID DECs.
 - [x] `decisions/DEC-EVL-006-eval-runner-emits-conformant-run-evidence.md`
   resolves R-EVL-006..011 (Phase D of the run-evidence rollout).
+- [x] `decisions/DEC-EVL-007-eval-runner-run-evidence-cross-checks.md`
+  resolves R-EVL-012..015 (Round-3 of the run-evidence rollout;
+  amends DEC-EVL-006 with Run-level required-for-done enforcement
+  and four cross-checks tying the Run record to its ledger).
 
 ## Code under this spec (already shipped, not changed by this spec)
 

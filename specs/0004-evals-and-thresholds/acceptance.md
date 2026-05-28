@@ -22,6 +22,10 @@ Spec 0004 is done when:
 4. R-EVL-006..011 resolved by DEC-EVL-006 (Phase D run-evidence
    rollout) and the runner emits one Run record + JSONL ledger per
    suite execution.
+5. R-EVL-012..015 resolved by DEC-EVL-007 (Round-3 run-evidence
+   rollout) and the validator enforces Run-level required-for-done
+   fields plus four cross-checks tying the Run record to its event
+   ledger.
 
 ## Explicit non-acceptance
 
