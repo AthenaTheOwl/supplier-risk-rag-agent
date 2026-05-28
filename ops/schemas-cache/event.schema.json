@@ -1,0 +1,85 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://athena.dev/ops/schemas/event.schema.json",
+  "title": "Event",
+  "description": "An append-only event-ledger entry. Events are the universal join key across runs, tools, artifacts, gates, and releases. Every record is immutable once written; corrections land as a new event with a parent_event_id pointer.",
+  "type": "object",
+  "required": [
+    "event_id",
+    "type",
+    "created_at",
+    "actor",
+    "payload"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "event_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "UUID for this event. Unique across the portfolio."
+    },
+    "type": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]*(\\.[a-z][a-z0-9_]*)+$",
+      "description": "Dotted namespace event type. Examples: tool.call.completed, agent.run.started, artifact.produced, proof.gate.passed, release.shipped, memory.promoted, decision.recorded, dream.candidate.generated. The canonical vocabulary lives in ops/event-types.md."
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "RFC 3339 timestamp when the event was recorded."
+    },
+    "actor": {
+      "type": "object",
+      "required": ["kind", "id"],
+      "additionalProperties": false,
+      "description": "Who or what caused the event.",
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": ["role", "human", "system"],
+          "description": "Actor category. role means an agent acting under a role contract; human means a person; system means an automated trigger such as cron."
+        },
+        "id": {
+          "type": "string",
+          "description": "Actor identifier. For role, the role id. For human, the handle or email. For system, the trigger name."
+        }
+      }
+    },
+    "payload": {
+      "type": "object",
+      "description": "Event-specific payload. The required fields per type are documented in ops/event-types.md; this schema does not constrain the inner shape so the ledger can absorb new event types without a schema bump."
+    },
+    "run_id": {
+      "type": "string",
+      "description": "Run identifier this event belongs to, when applicable."
+    },
+    "spec_id": {
+      "type": "string",
+      "description": "Spec identifier this event relates to, when applicable."
+    },
+    "artifact_id": {
+      "type": "string",
+      "description": "Artifact identifier this event produced or referenced, when applicable."
+    },
+    "cost_usd": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Dollar cost attributed to this event, when applicable."
+    },
+    "tokens_input": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Input tokens consumed by the action that fired this event, when applicable."
+    },
+    "tokens_output": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Output tokens emitted by the action that fired this event, when applicable."
+    },
+    "parent_event_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Event id this one descends from, used to reconstruct causal chains."
+    }
+  }
+}
