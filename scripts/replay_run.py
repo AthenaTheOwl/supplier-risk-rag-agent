@@ -43,6 +43,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -52,6 +53,38 @@ from pathlib import Path
 from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
+
+# Portable URI grammar from athena-site DEC-CDCP-014, mirrored in
+# scripts/validate_run_evidence.py. Replay parses
+# ``Run.sandbox_image_ref`` for the SHA in either the new repo://
+# form or the legacy ``<abs-path>@<sha>`` form. The duplicated
+# regex avoids a sibling-script import in the replay path.
+_REPO_URI_RE = re.compile(
+    r"^repo://(?P<repo>[a-z][a-z0-9-]*)@(?P<sha>[a-f0-9]{40})/(?P<path>.*)$"
+)
+_ARTIFACT_URI_RE = re.compile(
+    r"^artifact://(?P<repo>[a-z][a-z0-9-]*)/(?P<id>.+)$"
+)
+
+
+def resolve_uri(
+    uri: str, portfolio_root: Path | None = None
+) -> Path | None:
+    """Resolve a ``repo://`` URI to a local path or pass legacy paths through.
+
+    Mirrors :func:`scripts.validate_run_evidence.resolve_uri`.
+    Kept as a near-duplicate to keep replay's import graph small;
+    both copies stay aligned with the grammar in DEC-CDCP-014.
+    """
+    if portfolio_root is None:
+        portfolio_root = Path("e:/claude_code/random-apps")
+    m = _REPO_URI_RE.match(uri)
+    if m:
+        return portfolio_root / m["repo"] / m["path"]
+    m = _ARTIFACT_URI_RE.match(uri)
+    if m:
+        return None
+    return Path(uri)
 
 # Ops directory env-var overrides. The defaults point at the
 # canonical layout under the repo root; tests redirect via env vars
@@ -137,10 +170,26 @@ def _git_head_sha(repo: Path) -> str | None:
 
 
 def _parse_sandbox_sha(sandbox_image_ref: str) -> str | None:
-    """Pull the HEAD SHA out of a ``<repo-path>@<sha>`` sandbox ref."""
-    if not sandbox_image_ref or "@" not in sandbox_image_ref:
+    """Pull the HEAD SHA out of a sandbox_image_ref.
+
+    Accepts both the portable repo URI form
+    (``repo://supplier-risk-rag-agent@<sha>/``) per DEC-CDCP-014 and
+    the legacy ``<abs-path>@<sha>`` form from before the Round-6
+    migration. The new form takes precedence: if the URI parser
+    matches it returns the SHA group; otherwise the legacy split
+    on the last ``@`` runs as the fallback.
+    """
+    if not sandbox_image_ref:
+        return None
+    m = _REPO_URI_RE.match(sandbox_image_ref)
+    if m:
+        return m.group("sha") or None
+    if "@" not in sandbox_image_ref:
         return None
     sha = sandbox_image_ref.rsplit("@", 1)[1].strip()
+    # Strip a trailing slash that a repo:// URI without a strict
+    # match (e.g. the PENDING placeholder) might leave behind.
+    sha = sha.rstrip("/")
     return sha or None
 
 

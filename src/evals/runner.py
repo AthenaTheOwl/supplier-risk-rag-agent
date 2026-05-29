@@ -19,12 +19,14 @@ from src.evals.citation_faithfulness import evaluate_citations
 from src.evals.regression import evaluate_regression
 from src.evals.retrieval_quality import evaluate_retrieval
 from src.evals.run_evidence import (
+    REPO_NAME,
     build_run_evidence_fields,
     emit_event,
     emit_run,
     load_prompt_files,
     make_event,
     new_run_id,
+    repo_uri,
 )
 from src.retrieval.index import load_sample_corpus
 from src.retrieval.ranker import HybridRanker
@@ -274,18 +276,26 @@ def _record_suite_run(
         determinism=_suite_determinism(suite_name),
     )
 
-    # 4) Assemble + write Run record.
+    # 4) Assemble + write Run record. Inputs and the workspace id
+    # use the portable repo:// URI grammar from athena-site
+    # DEC-CDCP-014. The workspace id is the repo name (an identity
+    # token, not a file ref); the input ref points at the suite
+    # YAML inside this repo. ``sandbox_image_ref`` rides in via
+    # ``fields.fields`` and currently carries the PENDING token;
+    # ``scripts/finalize_sandbox_ref.py`` rewrites it to the
+    # post-commit SHA so the recorded SHA matches the commit that
+    # actually contains the Run record on disk.
     status = "done" if metrics["passed"] else "failed"
     run: dict[str, Any] = {
         "id": run_id,
         "spec_id": spec_id,
         "agent_id": f"{model_config.provider}:{model_config.model}",
         "runtime": "supplier-risk-rag-agent-evals",
-        "workspace_id": _repo_root().as_posix(),
+        "workspace_id": REPO_NAME,
         "started_at": started_at,
         "finished_at": finished_at,
         "status": status,
-        "inputs": [{"kind": "eval_suite", "ref": spec_id}],
+        "inputs": [{"kind": "eval_suite", "ref": repo_uri(spec_id)}],
         "outputs": [],
     }
     run.update(fields.fields)

@@ -16,7 +16,10 @@ from pathlib import Path
 import pytest
 
 from src.evals.run_evidence import (
+    PENDING_SHA_TOKEN,
+    REPO_NAME,
     aggregate_gate_results,
+    artifact_uri,
     build_run_evidence_fields,
     canonicalize_prompt,
     canonicalize_tool_surface,
@@ -27,6 +30,8 @@ from src.evals.run_evidence import (
     load_prompt_files,
     make_event,
     new_run_id,
+    repo_relative,
+    repo_uri,
 )
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -177,15 +182,20 @@ def test_emit_run_writes_valid_record_with_replay_fields(tmp_path: Path) -> None
         "spec_id": "eval_suites/refusal_cases.yaml",
         "agent_id": "anthropic:claude-sonnet-4-6",
         "runtime": "supplier-risk-rag-agent-evals",
-        "workspace_id": str(ROOT.as_posix()),
+        "workspace_id": REPO_NAME,
         "started_at": "2026-05-27T20:00:00Z",
         "finished_at": "2026-05-27T20:01:00Z",
         "status": "done",
-        "inputs": [{"kind": "eval_suite", "ref": "eval_suites/refusal_cases.yaml"}],
+        "inputs": [
+            {
+                "kind": "eval_suite",
+                "ref": repo_uri("eval_suites/refusal_cases.yaml"),
+            }
+        ],
         "outputs": [],
         "prompt_snapshot_hash": compute_sha256("plan|answer|refuse"),
         "tool_schemas_snapshot_hash": compute_sha256("toolset"),
-        "sandbox_image_ref": f"{ROOT.as_posix()}@deadbeefcafe",
+        "sandbox_image_ref": f"repo://{REPO_NAME}@{'d' * 40}/",
         "gate_results_summary": {
             "gates_passed": ["refusal_precision_threshold"],
             "gates_failed": [],
@@ -197,6 +207,9 @@ def test_emit_run_writes_valid_record_with_replay_fields(tmp_path: Path) -> None
     assert parsed["id"] == "run-xyz"
     assert re.match(r"^[a-f0-9]{64}$", parsed["prompt_snapshot_hash"])
     assert parsed["gate_results_summary"]["all_passed"] is True
+    assert parsed["sandbox_image_ref"].startswith(f"repo://{REPO_NAME}@")
+    assert parsed["workspace_id"] == REPO_NAME
+    assert parsed["inputs"][0]["ref"].startswith(f"repo://{REPO_NAME}@")
 
 
 def test_emit_run_rejects_invalid_record(tmp_path: Path) -> None:
@@ -352,39 +365,128 @@ def test_derive_sandbox_image_ref_returns_none_for_missing_path(tmp_path: Path) 
     assert derive_sandbox_image_ref(None) is None
 
 
-def test_derive_sandbox_image_ref_includes_head_sha_for_real_repo(
+def test_derive_sandbox_image_ref_defaults_to_pending_token(
+    tmp_path: Path,
+) -> None:
+    """Without an explicit SHA the emitter records the PENDING placeholder.
+
+    The two-pass emission pattern (the runner emits PENDING and a
+    post-commit step rewrites the value) means the default path
+    must produce the placeholder, not the working-tree HEAD.
+    """
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    ref = derive_sandbox_image_ref(repo)
+    assert ref == f"repo://{REPO_NAME}@{PENDING_SHA_TOKEN}/"
+
+
+def test_derive_sandbox_image_ref_uses_explicit_sha_when_passed(
     tmp_path: Path,
 ) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()
-    subprocess.run(
-        ["git", "init", "-b", "main", str(repo)],
-        capture_output=True,
-        check=True,
+    sha = "a" * 40
+    ref = derive_sandbox_image_ref(repo, sha=sha)
+    assert ref == f"repo://{REPO_NAME}@{sha}/"
+
+
+# --------------------------------------------------------------------- portable URIs
+
+
+def test_repo_uri_default_sha_is_pending() -> None:
+    uri = repo_uri("eval_suites/refusal_cases.yaml")
+    assert uri == (
+        f"repo://{REPO_NAME}@{PENDING_SHA_TOKEN}/"
+        "eval_suites/refusal_cases.yaml"
     )
-    subprocess.run(
-        ["git", "-C", str(repo), "config", "user.email", "evals@test.local"],
-        capture_output=True,
-        check=True,
+
+
+def test_repo_uri_with_explicit_sha() -> None:
+    sha = "f" * 40
+    uri = repo_uri("eval_suites/refusal_cases.yaml", sha=sha)
+    assert uri == (
+        f"repo://{REPO_NAME}@{sha}/eval_suites/refusal_cases.yaml"
     )
-    subprocess.run(
-        ["git", "-C", str(repo), "config", "user.name", "evals-test"],
-        capture_output=True,
-        check=True,
+
+
+def test_repo_uri_strips_windows_backslashes() -> None:
+    uri = repo_uri("eval_suites\\refusal_cases.yaml", sha="0" * 40)
+    assert "\\" not in uri
+    assert uri.endswith("/eval_suites/refusal_cases.yaml")
+
+
+def test_artifact_uri_shape() -> None:
+    uri = artifact_uri("watchlist-packet@run-abc")
+    assert uri == f"artifact://{REPO_NAME}/watchlist-packet@run-abc"
+
+
+def test_repo_relative_strips_repo_root(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    sub = repo / "eval_suites"
+    sub.mkdir(parents=True)
+    target = sub / "refusal_cases.yaml"
+    target.write_text("cases: []\n", encoding="utf-8")
+    rel = repo_relative(target, repo)
+    assert rel == "eval_suites/refusal_cases.yaml"
+
+
+# --------------------------------------------------------------------- resolve_uri
+
+
+def _load_resolve_uri() -> object:
+    """Import the validator's resolve_uri without a package layout.
+
+    The ``scripts/`` directory is not a Python package; load the
+    module via importlib so the helper test can call resolve_uri
+    without inserting scripts/ on the global sys.path.
+    """
+    import importlib.util
+
+    path = ROOT / "scripts" / "validate_run_evidence.py"
+    spec = importlib.util.spec_from_file_location(
+        "supplier_risk_rag_agent_validate_run_evidence", path
     )
-    (repo / "seed.txt").write_text("seed\n", encoding="utf-8")
-    subprocess.run(
-        ["git", "-C", str(repo), "add", "-A"], capture_output=True, check=True
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module.resolve_uri  # type: ignore[attr-defined]
+
+
+def test_resolve_uri_repo_form_to_local_path(tmp_path: Path) -> None:
+    resolve_uri = _load_resolve_uri()
+    portfolio = tmp_path / "random-apps"
+    uri = (
+        f"repo://supplier-risk-rag-agent@{'a' * 40}/"
+        "eval_suites/refusal_cases.yaml"
     )
-    subprocess.run(
-        ["git", "-C", str(repo), "commit", "-m", "seed"],
-        capture_output=True,
-        check=True,
+    resolved = resolve_uri(uri, portfolio_root=portfolio)
+    assert resolved == (
+        portfolio
+        / "supplier-risk-rag-agent"
+        / "eval_suites"
+        / "refusal_cases.yaml"
     )
-    ref = derive_sandbox_image_ref(repo)
-    assert ref is not None
-    assert ref.startswith(repo.as_posix() + "@")
-    assert re.match(r".+@[0-9a-f]{40}$", ref)
+
+
+def test_resolve_uri_artifact_form_returns_none() -> None:
+    resolve_uri = _load_resolve_uri()
+    uri = "artifact://supplier-risk-rag-agent/watchlist-packet@run-abc"
+    assert resolve_uri(uri) is None
+
+
+def test_resolve_uri_legacy_path_passes_through() -> None:
+    resolve_uri = _load_resolve_uri()
+    legacy = "/abs/path/to/repo/eval_suites/refusal_cases.yaml"
+    assert resolve_uri(legacy) == Path(legacy)
+
+
+def test_resolve_uri_malformed_uri_treated_as_legacy_path() -> None:
+    resolve_uri = _load_resolve_uri()
+    # Missing SHA segment; the regex does not match so the value
+    # falls through to the legacy-path branch and is returned as a
+    # plain Path.
+    weird = "repo://supplier-risk-rag-agent/eval_suites/refusal_cases.yaml"
+    assert resolve_uri(weird) == Path(weird)
 
 
 def test_new_run_id_shape() -> None:
@@ -548,15 +650,23 @@ def _well_formed_pair(run_id: str = "run-positive001") -> tuple[
         "spec_id": "eval_suites/refusal_cases.yaml",
         "agent_id": "anthropic:claude-sonnet-4-6",
         "runtime": "supplier-risk-rag-agent-evals",
-        "workspace_id": ROOT.as_posix(),
+        "workspace_id": REPO_NAME,
         "started_at": started_at,
         "finished_at": finished_at,
         "status": "done",
-        "inputs": [{"kind": "eval_suite", "ref": "eval_suites/refusal_cases.yaml"}],
+        "inputs": [
+            {
+                "kind": "eval_suite",
+                "ref": (
+                    f"repo://{REPO_NAME}@{'d' * 40}/"
+                    "eval_suites/refusal_cases.yaml"
+                ),
+            }
+        ],
         "outputs": [],
         "prompt_snapshot_hash": prompt_hash,
         "tool_schemas_snapshot_hash": tools_hash,
-        "sandbox_image_ref": f"{ROOT.as_posix()}@deadbeefcafe",
+        "sandbox_image_ref": f"repo://{REPO_NAME}@{'d' * 40}/",
         "gate_results_summary": {
             "gates_passed": ["refusal_precision_threshold"],
             "gates_failed": [],

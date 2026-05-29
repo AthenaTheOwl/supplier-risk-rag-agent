@@ -29,6 +29,38 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 REPLAY_SCRIPT = ROOT / "scripts" / "replay_run.py"
+FINALIZE_SCRIPT = ROOT / "scripts" / "finalize_sandbox_ref.py"
+
+
+def _finalize_sandbox_ref(run_id: str, env: dict[str, str], sha: str) -> None:
+    """Drive ``scripts/finalize_sandbox_ref.py`` against a fresh sample.
+
+    The emitter writes ``sandbox_image_ref`` with a ``PENDING``
+    placeholder per the two-pass pattern from Round 6 (DEC-EVL-009).
+    The replay command is HEAD-strict, so the test must finalize the
+    placeholder to the current HEAD SHA before invoking replay.
+    """
+    result = subprocess.run(  # noqa: S603 - args fixed, no shell
+        [
+            sys.executable,
+            str(FINALIZE_SCRIPT),
+            "--run-id",
+            run_id,
+            "--sha",
+            sha,
+        ],
+        env=env,
+        cwd=str(ROOT),
+        capture_output=True,
+        text=True,
+        check=False,
+        encoding="utf-8",
+        errors="replace",
+    )
+    assert result.returncode == 0, (
+        f"finalize_sandbox_ref failed: stdout={result.stdout!r} "
+        f"stderr={result.stderr!r}"
+    )
 
 
 # --------------------------------------------------------------------- helpers
@@ -151,9 +183,14 @@ def test_replay_equivalent_against_freshly_generated_sample(tmp_path: Path) -> N
 
     run_id, record_path, _ledger_path = _generate_sample(env)
     staged = json.loads(record_path.read_text(encoding="utf-8"))
-    assert staged["sandbox_image_ref"].endswith(f"@{head}"), staged[
+    assert staged["sandbox_image_ref"].endswith("@PENDING/"), staged[
         "sandbox_image_ref"
     ]
+    _finalize_sandbox_ref(run_id, env, head)
+    staged = json.loads(record_path.read_text(encoding="utf-8"))
+    assert staged["sandbox_image_ref"] == (
+        f"repo://supplier-risk-rag-agent@{head}/"
+    ), staged["sandbox_image_ref"]
 
     result = _invoke_replay(run_id, env)
     assert result.returncode == 0, (
@@ -198,10 +235,11 @@ def test_replay_head_mismatch_exits_one_with_checkout_hint(
     # Rewrite sandbox_image_ref to encode a SHA the working tree will
     # never match. The fake SHA is a syntactically valid 40-char hex
     # string so the parsing path stays on the happy line and the
-    # check fires on the comparison itself.
+    # check fires on the comparison itself. Uses the new portable
+    # repo:// URI shape from DEC-CDCP-014.
     fake_sha = "0" * 40
     record = json.loads(record_path.read_text(encoding="utf-8"))
-    record["sandbox_image_ref"] = f"{record['workspace_id']}@{fake_sha}"
+    record["sandbox_image_ref"] = f"repo://supplier-risk-rag-agent@{fake_sha}/"
     record_path.write_text(
         json.dumps(record, sort_keys=True, indent=2) + "\n", encoding="utf-8"
     )
@@ -233,9 +271,11 @@ def test_replay_detects_prompt_drift(tmp_path: Path) -> None:
     exit 1, naming the diverging signal in the printed summary plus
     in the written report.
     """
+    head = _git_head_sha()
     records_dir, ledger_dir, replay_dir = _redirected_layout(tmp_path)
     env = _redirected_env(records_dir, ledger_dir, replay_dir)
     run_id, record_path, _ = _generate_sample(env)
+    _finalize_sandbox_ref(run_id, env, head)
 
     record = json.loads(record_path.read_text(encoding="utf-8"))
     original = record["prompt_snapshot_hash"]
@@ -267,9 +307,11 @@ def test_replay_detects_gate_rollup_drift(tmp_path: Path) -> None:
     The script must report the divergence and exit 1, calling out
     the gate-rollup signal specifically.
     """
+    head = _git_head_sha()
     records_dir, ledger_dir, replay_dir = _redirected_layout(tmp_path)
     env = _redirected_env(records_dir, ledger_dir, replay_dir)
     run_id, record_path, _ = _generate_sample(env)
+    _finalize_sandbox_ref(run_id, env, head)
 
     record = json.loads(record_path.read_text(encoding="utf-8"))
     summary = record["gate_results_summary"]

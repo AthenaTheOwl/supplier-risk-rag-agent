@@ -44,11 +44,49 @@ the network, and treats a missing schema cache file as a hard error.
 from __future__ import annotations
 
 import json
+import re
 import sys
 from pathlib import Path
 from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
+
+# Portable URI grammar from athena-site DEC-CDCP-014. Run-evidence
+# refs may carry one of two URI schemes (repo:// for file references
+# at a pinned SHA, artifact:// for logical artifact references) or a
+# legacy local path (kept accepted during the migration round).
+_REPO_URI_RE = re.compile(
+    r"^repo://(?P<repo>[a-z][a-z0-9-]*)@(?P<sha>[a-f0-9]{40}|PENDING)/(?P<path>.*)$"
+)
+_ARTIFACT_URI_RE = re.compile(
+    r"^artifact://(?P<repo>[a-z][a-z0-9-]*)/(?P<id>.+)$"
+)
+
+
+def resolve_uri(
+    uri: str, portfolio_root: Path | None = None
+) -> Path | None:
+    """Resolve a ``repo://`` URI to a local path or pass legacy paths through.
+
+    Returns ``None`` for ``artifact://`` URIs (artifact refs are
+    logical ids, not file paths). Returns the URI as a ``Path``
+    when the input does not match either scheme, which is the
+    legacy-local-path branch the interop clause in DEC-CDCP-014
+    keeps accepting during the migration round.
+
+    ``portfolio_root`` defaults to ``e:/claude_code/random-apps`` so
+    the validator can resolve a sibling repo's URI without
+    consulting the producer's local layout.
+    """
+    if portfolio_root is None:
+        portfolio_root = Path("e:/claude_code/random-apps")
+    m = _REPO_URI_RE.match(uri)
+    if m:
+        return portfolio_root / m["repo"] / m["path"]
+    m = _ARTIFACT_URI_RE.match(uri)
+    if m:
+        return None  # artifact refs are not file paths
+    return Path(uri)
 CACHE_DIR = ROOT / "ops" / "schemas-cache"
 EVENT_LEDGER_DIR = ROOT / "ops" / "event-ledger"
 RUN_RECORDS_DIR = ROOT / "ops" / "run-records"

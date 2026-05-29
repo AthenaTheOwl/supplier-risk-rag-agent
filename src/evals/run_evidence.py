@@ -35,8 +35,13 @@ Field-population rules followed here:
   (no sampling), but the schema treats absence as "not pinned".
 - ``checkpoint_ref``: omitted. This repo has no managed-task-runtime
   checkpoint store; the eval runner runs in-process.
-- ``sandbox_image_ref``: populated as ``<repo-path>@<HEAD-SHA>`` so a
-  reviewer can pin replay to the commit that produced the record.
+- ``sandbox_image_ref``: populated as
+  ``repo://supplier-risk-rag-agent@<HEAD-SHA>/`` per the portable
+  repo URI grammar defined in athena-site DEC-CDCP-014. Two-pass
+  emit: the runner records a ``PENDING`` placeholder when the
+  HEAD-SHA the commit will land at is not yet known, and
+  ``scripts/finalize_sandbox_ref.py`` rewrites the SHA after the
+  data files commit lands.
 - ``gate_results_summary``: aggregated from ``gate.check.passed`` and
   ``gate.check.failed`` events emitted per suite-level threshold
   (recall@5 >= 0.70, citation faithfulness >= 0.95, refusal precision
@@ -146,24 +151,70 @@ def compute_sha256(canonical: str) -> str:
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
 
-# ----------------------------------------------------------------- sandbox ref
+# ----------------------------------------------------------------- portable repo URIs
+
+# Per athena-site DEC-CDCP-014 the run-evidence emitter produces
+# portable repo:// URIs that point at this repo by name (not by
+# absolute path), so a consumer in any other portfolio repo can
+# resolve the reference against a shared portfolio root without
+# baking in the producer's local layout.
+REPO_NAME = "supplier-risk-rag-agent"
+
+# Placeholder SHA token for the two-pass sandbox-ref emission. The
+# Run record lands with this token in place of the real SHA; a
+# post-commit step (``scripts/finalize_sandbox_ref.py``) rewrites
+# the token to the SHA of the commit that ultimately contains the
+# Run record on disk. This closes the systemic off-by-one where a
+# single-pass emitter records the parent commit instead of the
+# commit that wrote the sample.
+PENDING_SHA_TOKEN = "PENDING"
 
 
-def derive_sandbox_image_ref(repo_path: Path | None) -> str | None:
-    """Return ``<repo-path>@<head-sha>`` for a real git repo, else None.
+def repo_uri(rel_path: str, sha: str | None = None) -> str:
+    """Compose a ``repo://supplier-risk-rag-agent@<sha>/<rel-path>`` URI.
 
-    A ``None`` return tells the caller to omit ``sandbox_image_ref``
-    from the Run record entirely. The schema treats absence as "not
-    derivable".
+    ``rel_path`` is a POSIX path inside this repo (forward slashes,
+    no leading slash). An empty path means the URI points at the
+    repo root and the trailing slash after the SHA stays in place
+    per the grammar in DEC-CDCP-014.
+
+    ``sha`` defaults to the ``PENDING`` placeholder token (see
+    :data:`PENDING_SHA_TOKEN`). Callers that already know the
+    target SHA pass it explicitly.
     """
-    if repo_path is None:
-        return None
-    repo = Path(repo_path).expanduser()
-    if not repo.exists():
-        return None
+    if rel_path.startswith("/"):
+        rel_path = rel_path.lstrip("/")
+    rel_path = rel_path.replace("\\", "/")
+    sha_token = sha if sha is not None else PENDING_SHA_TOKEN
+    return f"repo://{REPO_NAME}@{sha_token}/{rel_path}"
+
+
+def artifact_uri(artifact_id: str) -> str:
+    """Compose an ``artifact://supplier-risk-rag-agent/<id>`` URI."""
+    return f"artifact://{REPO_NAME}/{artifact_id}"
+
+
+def repo_relative(path: Path | str, repo_root: Path) -> str:
+    """Return a POSIX relative path from ``repo_root`` to ``path``.
+
+    Falls back to the input string when ``path`` does not live
+    under ``repo_root`` so callers can still produce a URI for an
+    out-of-tree input (the consumer will fail to resolve it, which
+    is the right signal).
+    """
+    p = Path(path)
+    root = Path(repo_root)
+    try:
+        return p.resolve().relative_to(root.resolve()).as_posix()
+    except (ValueError, OSError):
+        return str(path).replace("\\", "/")
+
+
+def _git_head_sha(repo_path: Path) -> str | None:
+    """Return the current HEAD SHA of ``repo_path`` or None."""
     try:
         result = subprocess.run(  # noqa: S603 - args fixed, no shell
-            ["git", "-C", str(repo), "rev-parse", "HEAD"],
+            ["git", "-C", str(repo_path), "rev-parse", "HEAD"],
             capture_output=True,
             text=True,
             check=False,
@@ -174,7 +225,32 @@ def derive_sandbox_image_ref(repo_path: Path | None) -> str | None:
     head = result.stdout.strip()
     if result.returncode != 0 or not head:
         return None
-    return f"{repo.as_posix()}@{head}"
+    return head
+
+
+def derive_sandbox_image_ref(
+    repo_path: Path | None, *, sha: str | None = None
+) -> str | None:
+    """Return ``repo://supplier-risk-rag-agent@<sha>/`` or None.
+
+    When ``sha`` is passed explicitly the URI uses that SHA
+    verbatim. When ``sha`` is None the URI uses the
+    :data:`PENDING_SHA_TOKEN` placeholder so a post-commit step can
+    rewrite the value to the SHA of the commit that ultimately
+    wrote the Run record to disk. ``repo_path`` is kept for
+    backwards compatibility and to verify that the repo root exists
+    before producing a URI that would dangle.
+
+    A ``None`` return tells the caller to omit
+    ``sandbox_image_ref`` from the Run record entirely.
+    """
+    if repo_path is None:
+        return None
+    repo = Path(repo_path).expanduser()
+    if not repo.exists():
+        return None
+    sha_token = sha if sha is not None else PENDING_SHA_TOKEN
+    return f"repo://{REPO_NAME}@{sha_token}/"
 
 
 # ----------------------------------------------------------------- schema cache loader
@@ -336,6 +412,7 @@ def build_run_evidence_fields(
     repo_path: Path | None,
     gate_events: Iterable[Mapping[str, Any]],
     determinism: Mapping[str, Any] | None = None,
+    sandbox_sha: str | None = None,
 ) -> RunEvidenceFields:
     """Compute the six replay-equivalence fields where derivable.
 
@@ -383,7 +460,7 @@ def build_run_evidence_fields(
             fields["determinism"] = clean
             populated.append("determinism")
 
-    sandbox_ref = derive_sandbox_image_ref(repo_path)
+    sandbox_ref = derive_sandbox_image_ref(repo_path, sha=sandbox_sha)
     if sandbox_ref is not None:
         fields["sandbox_image_ref"] = sandbox_ref
         populated.append("sandbox_image_ref")
