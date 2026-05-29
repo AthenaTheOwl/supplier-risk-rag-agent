@@ -191,6 +191,39 @@ rollback: |
   `ops/event-ledger/run-643dff8f3b9c.jsonl` and
   `scripts/validate_run_evidence.py` are not touched by rollback.
 owner: control.coordinator
+systems_map: |
+  Meta-gate on a validator. The validator is a contract enforcer; the
+  chaos suite is the test that the enforcer itself still enforces.
+  Same producer-consumer separation the run-evidence chain exposes:
+  the suite plays the role of an adversarial producer, the validator
+  plays the consumer, and a silent regression in the consumer is the
+  failure shape no green CI run otherwise catches.
+transferable_principle: |
+  Any contract validator whose producer always emits a consistent
+  artifact needs an adversarial-mutation suite to catch silent
+  regressions in the validator itself; otherwise a refactor that
+  drops a check passes every real run.
+falsification_test: |
+  If a future regression introduces an eighth mutation class the
+  current seven do not cover and the validator misses it, the
+  three-layers-without-overlap claim is falsified for that class and
+  the suite needs an eighth test plus a coverage-map update.
+adoption_ladder:
+  minimum_viable: |
+    Ship the seven mutation tests + the baseline test + the
+    suite-level guard; run locally under pytest.
+  mid_adoption: |
+    Add the named `chaos-validation` CI job; require it as a
+    blocking gate per DEC-CDCP-015.
+  full_adoption: |
+    Promote to a property-based test once the seven hand-coded
+    cases have a year of regression history; sibling repos in the
+    portfolio install the same chaos-suite shape against their own
+    contract validators.
+  monitoring_signals:
+    - chaos-validation job pass/fail trend per PR
+    - count of new mutation classes added per quarter
+    - count of validator-regression bugs caught by the chaos suite vs. caught in production
 ---
 
 ## decision

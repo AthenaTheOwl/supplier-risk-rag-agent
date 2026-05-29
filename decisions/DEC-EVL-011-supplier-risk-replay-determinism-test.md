@@ -168,6 +168,37 @@ rollback: |
   is not touched by rollback because the single-shot replay-smoke
   gate under DEC-EVL-010 still depends on it.
 owner: control.coordinator
+systems_map: |
+  Replay-equivalence as a determinism proof. A single replay asserts
+  the contract holds once; three replays + a hash-set assertion
+  asserts the contract holds across calls. The collision bug in the
+  per-second timestamp surface exposes the same lesson at the file-
+  naming layer: rapid identical operations need a uniqueness key
+  that survives the OS clock's resolution.
+transferable_principle: |
+  Any determinism contract that ships a single-shot smoke test
+  should ship the three-rerun variant alongside; single-shot tests
+  cannot catch drift between nominally-identical calls.
+falsification_test: |
+  If three replays of the canonical sample produce two or more
+  distinct SHA-256 hashes over the canonicalized replay-equivalence
+  triple, the deterministic-replay claim is falsified and the
+  failure bundle names the diverging traces.
+adoption_ladder:
+  minimum_viable: |
+    Ship the three-rerun fixture + the microsecond-resolution
+    filename format; run locally under pytest.
+  mid_adoption: |
+    Add the named `replay-determinism` CI job with failbundle
+    upload on failure.
+  full_adoption: |
+    Sibling repos in the portfolio install the same three-rerun
+    determinism gate against their own canonical samples; RERUNS
+    overrides extend to ten on a nightly cron.
+  monitoring_signals:
+    - replay-determinism job pass/fail trend per PR
+    - failbundle upload count per month
+    - unique-hash-set size on each failure
 ---
 
 ## decision

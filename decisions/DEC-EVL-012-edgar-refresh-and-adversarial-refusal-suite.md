@@ -197,6 +197,39 @@ rollback: |
   `specs/0004-evals-and-thresholds/traceability.md`. Delete this
   DEC.
 owner: control.coordinator
+systems_map: |
+  Two surfaces sharing one repo. The refresh script exposes the
+  ingestion path's live-vs-offline-stub dual mode; the adversarial
+  refusal suite exposes the refusal logic's domain-vocabulary blind
+  spot. The shared mechanism is a deterministic evaluator that fans
+  out across both surfaces without re-rolling the canonical eval
+  fixture.
+transferable_principle: |
+  Open one new failure mode at a time and pair the suite with the
+  smallest code change that closes the mode; tangling two failure
+  modes in one gate hides the dispatch signal a future regression
+  needs.
+falsification_test: |
+  If the adversarial suite scores >= 0.85 on the unmodified refusal
+  logic (without the new ADVERSARIAL_PHRASES branch), the claim
+  that the new failure mode is distinct from the existing
+  refusal-cases coverage is falsified.
+adoption_ladder:
+  minimum_viable: |
+    Ship the 10-case YAML + the ADVERSARIAL_PHRASES branch; gate
+    at refusal_precision >= 0.85.
+  mid_adoption: |
+    Wire the refresh script into a documented operator runbook;
+    publish the offline-stub fallback as the default for sandboxed
+    CI.
+  full_adoption: |
+    Expand the adversarial suite past the initial 10 cases as new
+    domain-vocabulary failure patterns surface; treat the suite as
+    a regression-anchor for any future refusal-logic edit.
+  monitoring_signals:
+    - refusal_precision trend on the adversarial suite per PR
+    - refresh-fixture diff size per refresh run
+    - count of new adversarial cases added per quarter
 ---
 
 ## decision
