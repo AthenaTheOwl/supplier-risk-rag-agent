@@ -7,7 +7,7 @@ IDs and pairs the first one with a DEC.
 ## Spec ledger
 
 - [x] `specs/0004-evals-and-thresholds/requirements.md` with
-  R-EVL-001..033.
+  R-EVL-001..036.
 - [x] `specs/0004-evals-and-thresholds/design.md`.
 - [x] `specs/0004-evals-and-thresholds/tasks.md` (this file).
 - [x] `specs/0004-evals-and-thresholds/acceptance.md`.
@@ -46,6 +46,11 @@ IDs and pairs the first one with a DEC.
   resolves R-EVL-031..033 (live EDGAR refresh script +
   refreshed_corpus fixture + adversarial refusal precision eval
   suite + paired refusal-logic update; amends DEC-EVL-011).
+- [x] `decisions/DEC-EVL-013-supplier-risk-rag-agent-chaos-test-suite.md`
+  resolves R-EVL-034..036 (chaos test suite covering seven
+  mutation classes that verify
+  `scripts/validate_run_evidence.py` catches each mutation +
+  named `chaos-validation` CI job; amends DEC-EVL-012).
 
 ## Code under this spec (already shipped, not changed by this spec)
 
@@ -131,9 +136,18 @@ IDs and pairs the first one with a DEC.
   `reports/adversarial_refusal_precision_metrics.json` (HTML +
   JSON reports for the initial run).
 
+## Code added under R-EVL-034..036 (chaos test suite for run-evidence validator)
+
+- `tests/test_chaos_run_evidence.py` (`_build_synthetic_root`
+  helper + baseline test + seven mutation tests + suite-level
+  guard).
+- `.github/workflows/run-evidence-gates.yml` `chaos-validation`
+  job (ubuntu-latest, uv sync on Python 3.11, pytest on
+  `tests/test_chaos_run_evidence.py`).
+
 ## Verification
 
-- [x] `python scripts/spec_check.py` exits 0 with R-EVL-001..033
+- [x] `python scripts/spec_check.py` exits 0 with R-EVL-001..036
   resolved.
 - [x] `python scripts/validate_decisions.py` exits 0 with the new
   DEC parsing clean.

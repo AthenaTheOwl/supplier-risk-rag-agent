@@ -629,3 +629,85 @@ Acceptance:
 - The HTML and JSON reports under `reports/` carry the same
   per-suite metric shape as the existing
   `baseline_eval_report.html`.
+
+### R-EVL-034: chaos test suite verifies the validator against seven mutation classes
+
+WHEN an operator (or CI) runs the chaos test suite, THE SYSTEM
+SHALL copy the canonical sample (`run-643dff8f3b9c`) into a
+synthetic root under `tmp_path`, apply each of seven mutation
+classes (M1..M7) against the Run record or the event ledger, run
+`scripts/validate_run_evidence.py` against the mutated artifacts,
+and assert the validator exits non-zero with a stderr message
+naming the broken rule. The canonical sample on disk SHALL NOT
+be modified by any test.
+
+Acceptance:
+- `tests/test_chaos_run_evidence.py` exists and parses as Python.
+- The suite carries a baseline test that asserts the unmutated
+  canonical sample passes the validator (exit code 0).
+- The suite carries one test per mutation class
+  (M1..M7) plus a suite-level guard counting the expected
+  mutation test names.
+- Each mutation test asserts the validator exits non-zero AND the
+  stderr names the broken rule (the assertion fails loudly when
+  the validator returns exit code 0, because a zero exit on a
+  mutated sample names a real validator gap).
+- The canonical sample on disk at
+  `ops/run-records/run-643dff8f3b9c.json` and
+  `ops/event-ledger/run-643dff8f3b9c.jsonl` is byte-identical
+  before and after the suite runs.
+
+### R-EVL-035: chaos mutation classes cover all three validator layers
+
+WHEN the chaos test suite runs, THE SYSTEM SHALL cover the
+validator's three enforcement layers (typed-event-payload
+validation via the cached event schema's oneOf discriminator,
+four cross-checks tying the Run record to its ledger, and the
+required-for-done block on done Runs) via the seven mutation
+classes.
+
+Acceptance:
+- M1 mutates `Run.prompt_snapshot_hash` to a different valid-shaped
+  digest and asserts cross-check 1 trips with the
+  `prompt_snapshot_hash mismatch` diagnostic.
+- M2 mutates `Run.tool_schemas_snapshot_hash` and asserts
+  cross-check 2 trips with the `tool_schemas_snapshot_hash
+  mismatch` diagnostic.
+- M3 inserts a phantom gate name into
+  `Run.gate_results_summary.gates_passed` and asserts cross-check
+  4 trips with the `gate_results_summary mismatch` diagnostic.
+- M4 removes the terminal `gate.run.evidence_recorded` event from
+  the ledger and asserts the required-event check trips with the
+  `no gate.run.evidence_recorded event in the ledger`
+  diagnostic.
+- M5 drops `prompt_snapshot_hash` from the `pipeline.start`
+  event's payload and asserts the typed-event-payload validation
+  rejects the event with the `is not valid under any of the
+  given schemas` envelope phrase plus the `pipeline.start`
+  event type surfaced in stderr.
+- M6 mutates
+  `gate.run.evidence_recorded.payload.fields_populated` to claim
+  the `determinism` field (not populated on the canonical sample)
+  and asserts cross-check 3 trips with the `does not match
+  replay-equivalence fields populated on Run` diagnostic.
+- M7 keeps `Run.status == "done"` but removes
+  `sandbox_image_ref` and asserts the validator exits non-zero
+  with `sandbox_image_ref` named in stderr.
+
+### R-EVL-036: CI workflow carries named chaos-validation job
+
+WHEN the `run-evidence-gates.yml` workflow runs, THE SYSTEM SHALL
+carry a named `chaos-validation` job (separate from
+`universal-gates`, `packet-and-replay`, and
+`replay-determinism`) that runs on `ubuntu-latest` under Python
+3.11, syncs dev deps under uv, and runs
+`uv run pytest tests/test_chaos_run_evidence.py -v --no-cov`.
+
+Acceptance:
+- The workflow file parses as valid YAML and lists
+  `chaos-validation` as a distinct job under `jobs:`.
+- The job carries no `continue-on-error: true` on any step.
+- The job bypasses no pre-commit hooks via `--no-verify` or
+  equivalent.
+- A red chaos fixture turns the job red and blocks the merge
+  per GitHub's default branch-protection contract.

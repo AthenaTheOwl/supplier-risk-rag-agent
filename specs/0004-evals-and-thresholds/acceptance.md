@@ -3,7 +3,7 @@
 ## Gates
 
 - `python scripts/voice_lint.py` exits 0 across the new spec files.
-- `python scripts/spec_check.py` exits 0 with R-EVL-001..030 each
+- `python scripts/spec_check.py` exits 0 with R-EVL-001..036 each
   resolved by a per-ID DEC.
 - `python scripts/validate_decisions.py` exits 0 with the new DECs
   parsing clean.
@@ -19,6 +19,9 @@
 - `python -m pytest tests/test_replay_determinism.py -v` exits 0
   with three replays of `run-643dff8f3b9c` producing one SHA-256
   hash over the three replay-equivalence fields per R-EVL-028.
+- `python -m pytest tests/test_chaos_run_evidence.py -v` exits 0
+  with one baseline test, seven mutation tests, and one
+  suite-level guard passing per R-EVL-034..036.
 
 ## Done means
 
