@@ -1,0 +1,93 @@
+# meta.yaml dream 2026-W22 audit trail
+#
+# Per-week audit record for the learning.dream-orchestrator
+# weekly pass. Pairs with report.md (narrative) and the candidate
+# files under candidates/.
+
+id: dream-2026-W22
+week: 2026-W22
+repo: supplier-risk-rag-agent
+generated_at: 2026-05-29T18:30:00Z
+generated_by:
+  kind: role
+  id: learning.dream-orchestrator
+  version: v1
+
+subject: Retrospect on v2 engineering-grade run-evidence rollout and project the next moves with the largest payoff
+
+scope:
+  lookback_days: 5
+  window_start: 2026-05-25
+  window_end: 2026-05-29
+  sources:
+    - commits:
+        range: 5b14eea..da83e4e
+        ref: git log --oneline -30
+        count: 21
+    - decisions:
+        path: decisions/
+        count_total: 30
+        new_this_week:
+          - DEC-EVL-006-eval-runner-emits-conformant-run-evidence
+          - DEC-EVL-007-eval-runner-run-evidence-cross-checks
+          - DEC-EVL-008-eval-replay-command
+          - DEC-EVL-009-supplier-risk-rag-agent-portable-repo-uri-migration
+          - DEC-EVL-010-supplier-risk-rag-agent-ci-enforces-run-evidence-chain
+    - specs:
+        path: specs/0004-evals-and-thresholds/
+        new_requirements: R-EVL-006..027 (22 R-EVL added across Rounds 1-8)
+    - schemas_cache:
+        path: ops/schemas-cache/
+        refreshed:
+          - run.schema.json (Round 1)
+          - event.schema.json (Round 2 typed payloads)
+    - run_records:
+        path: ops/run-records/run-643dff8f3b9c.json
+        note: canonical Round-6 regenerated sample under portable repo:// URI grammar
+    - event_ledger:
+        path: ops/event-ledger/run-643dff8f3b9c.jsonl
+    - ci_workflow:
+        path: .github/workflows/run-evidence-gates.yml
+        note: implements DEC-CDCP-015 portfolio contract
+    - dreams_prior:
+        path: dreams/2026-W21/
+
+modes_run:
+  - memory_consolidation
+  - skill_extraction
+  - failure_clustering
+  - architecture_drift_detection
+
+modes_skipped:
+  - id: adversarial_simulation
+    reason: same as W21 generation budget + safe sandbox still not wired
+    reopen_when: adversarial-test-generation skill graduates
+  - id: golden_test_generation
+    reason: W21 candidates already pinned ranker weights + offline-cache fallback; no new spec-without-eval-coverage gap surfaced this week
+    reopen_when: a new spec ships requirements without paired eval coverage
+  - id: prompt_patch_generation
+    reason: no prompt drift signal in lookback window; default model unchanged
+    reopen_when: prompt suite shows quality drift across consecutive runs
+
+candidates_produced:
+  total: 5
+  by_kind:
+    backlog_item: 3
+    memory_update: 1
+    skill_patch: 1
+  files:
+    - candidates/backlog-001-retire-legacy-local-path-acceptance.md
+    - candidates/memory-001-two-pass-emission-pattern.md
+    - candidates/backlog-002-replay-chaos-suite.md
+    - candidates/skill-001-finalize-sandbox-ref-workflow.md
+    - candidates/backlog-003-cross-link-sibling-consumer-resolver-contract.md
+
+human_review_required: true
+
+policy_refs:
+  - .agents/policies/dream-candidates-require-human-approval.yaml
+
+gates_passed:
+  - voice_lint
+  - check_no_bom
+  - validate_dreams
