@@ -134,6 +134,13 @@ def main() -> int:
         return 0
 
     violations: list[str] = []
+    systems_thinking_warnings: list[str] = []
+    systems_thinking_fields = (
+        "systems_map",
+        "transferable_principle",
+        "falsification_test",
+        "adoption_ladder",
+    )
     for dec_path in decisions:
         rel = dec_path.relative_to(ROOT).as_posix()
         data, err = parse_front_matter(dec_path)
@@ -155,11 +162,28 @@ def main() -> int:
             location = "/".join(str(part) for part in err_obj.absolute_path) or "<root>"
             violations.append(f"{rel}: {location}: {err_obj.message}")
 
+        # Systems-thinking discipline check (per DEC-CDCP-020). WARN only;
+        # exit code stays 0. After 30 days an amendment DEC ratchets to FAIL.
+        if data.get("status") == "approved":
+            missing = [f for f in systems_thinking_fields if f not in data or data.get(f) in (None, "")]
+            if missing:
+                systems_thinking_warnings.append(
+                    f"{rel}: missing systems-thinking field(s): {', '.join(missing)}"
+                )
+
     if violations:
         print("validate_decisions: violations found", file=sys.stderr)
         for v in violations:
             print(f"  - {v}", file=sys.stderr)
         return 1
+
+    if systems_thinking_warnings:
+        print(
+            "validate_decisions: WARN systems-thinking discipline (per DEC-CDCP-020)",
+            file=sys.stderr,
+        )
+        for w in systems_thinking_warnings:
+            print(f"  - {w}", file=sys.stderr)
 
     print(f"validate_decisions OK ({len(decisions)} decision(s))")
     return 0
