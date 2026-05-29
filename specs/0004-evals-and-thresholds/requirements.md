@@ -711,3 +711,80 @@ Acceptance:
   equivalent.
 - A red chaos fixture turns the job red and blocks the merge
   per GitHub's default branch-protection contract.
+
+### R-EVL-037: schemas-cache mirrors upstream systems-thinking fields
+
+WHEN a contributor edits a DEC, a dream candidate, or a Run
+record under this repo, THE SYSTEM SHALL resolve the four optional
+systems-thinking fields (`systems_map`,
+`transferable_principle`, `falsification_test`,
+`adoption_ladder`) against `ops/schemas-cache/decision.schema.json`,
+`ops/schemas-cache/dream-output.schema.json`, and
+`ops/schemas-cache/run.schema.json`, all three byte-identical to
+the upstream amendment at athena-site under DEC-CDCP-020.
+
+Acceptance:
+- `python scripts/check_schema_cache_freshness.py` exits 0.
+- Each of the three cached schemas declares the four fields
+  under `properties` with type strings (`string`, `string`,
+  `string`, `object`).
+- A DEC carrying the four fields validates against the cached
+  schema without error.
+
+### R-EVL-038: AGENTS.md names the systems-thinking discipline
+
+WHEN a coding agent (or a new author) reads `.agents/AGENTS.md`,
+THE SYSTEM SHALL present a top-level "Systems-thinking discipline
+(per DEC-CDCP-020)" section that names the four fields, the
+WARN-now-FAIL-later ratchet, and the 30-day organic-adoption
+window.
+
+Acceptance:
+- `.agents/AGENTS.md` carries a section whose heading matches
+  `Systems-thinking discipline (per DEC-CDCP-020)`.
+- The section names all four fields (`systems_map`,
+  `transferable_principle`, `falsification_test`,
+  `adoption_ladder`) and the 30-day ratchet language.
+- The section sits above the existing "Coding style" section so
+  every author hits the discipline on first read.
+
+### R-EVL-039: validate_decisions emits a non-fatal WARN on missing fields
+
+WHEN `python scripts/validate_decisions.py` runs against the
+repo's DEC set, THE SYSTEM SHALL emit a stderr WARN line for each
+DEC whose `status` is `approved` and whose front-matter is missing
+any of the four systems-thinking fields. Exit code SHALL stay 0
+so the bootstrap-friendly default holds until a future amendment
+DEC ratchets the warning to FAIL.
+
+Acceptance:
+- Running the script against the current repo prints a WARN
+  block to stderr listing the historical DECs missing the four
+  fields.
+- The script exits 0 (`echo $?` returns 0) on a green run with
+  WARN entries present.
+- A DEC carrying all four fields produces no WARN entry against
+  its path.
+- The three retrofitted DECs (DEC-EVL-011..013) produce no WARN
+  entry; the remaining 29 historical DECs produce one WARN entry
+  each until a future coverage pass.
+
+### R-EVL-040: three most recent DECs carry the four systems-thinking fields
+
+WHEN a reviewer reads the front-matter of the three most recent
+DECs in `decisions/`, THE SYSTEM SHALL present the four
+systems-thinking fields populated with substantive content on
+each of DEC-EVL-011, DEC-EVL-012, and DEC-EVL-013.
+
+Acceptance:
+- DEC-EVL-011 carries `systems_map`,
+  `transferable_principle`, `falsification_test`, and
+  `adoption_ladder` keys with non-empty content; the
+  `adoption_ladder` object carries `minimum_viable`,
+  `mid_adoption`, `full_adoption`, and `monitoring_signals`.
+- DEC-EVL-012 carries the same four fields with the same
+  `adoption_ladder` shape.
+- DEC-EVL-013 carries the same four fields with the same
+  `adoption_ladder` shape.
+- `python scripts/validate_decisions.py` emits no WARN against
+  any of the three retrofitted DECs.
