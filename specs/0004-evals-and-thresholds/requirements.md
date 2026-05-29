@@ -475,3 +475,78 @@ Acceptance:
 - A red gate (e.g. a failed pytest assertion) turns the job red
   and blocks the merge per GitHub's default branch-protection
   contract.
+
+### R-EVL-028: replay-determinism fixture asserts hash-equal across reruns
+
+WHEN an operator (or CI) runs the replay-determinism fixture, THE
+SYSTEM SHALL replay the canonical sample `run-643dff8f3b9c`
+`RERUNS` times (default 3, override via the `RERUNS` env var) at
+the recorded sandbox SHA, extract the three replay-equivalence
+fields from each fresh replay record's `comparison.<field>.fresh`
+slot, canonicalize the tuple via
+`json.dumps(triple, sort_keys=True, separators=(",", ":"))`,
+SHA-256-hash the byte string, and assert every replay produced the
+same hash. On divergence THE SYSTEM SHALL write a failure bundle
+to `artifacts/failbundles/` carrying `determinism_failure.json`,
+`trace_0.json`, and `trace_1.json` for the first two diverging
+replays, and fail loudly with the bundle path in the assertion
+message.
+
+Acceptance:
+- `tests/test_replay_determinism.py` exists and parses as Python.
+- The fixture saves the current HEAD (branch name when on a
+  branch, otherwise the SHA) before the loop and restores it on
+  teardown including the failure paths.
+- The fixture checks out the recorded sandbox SHA from
+  `Run.sandbox_image_ref` before the replay loop.
+- On a clean working tree at the recorded SHA, the fixture
+  passes (`hashes` is a set of size one) and removes the
+  per-replay ledgers and reports it created during the loop.
+- On divergence, the failure bundle lands under
+  `artifacts/failbundles/` and the assertion message names the
+  bundle path relative to the repo root.
+
+### R-EVL-029: replay ledger filenames carry microsecond resolution
+
+WHEN `scripts/replay_run.py` builds a per-replay ledger filename,
+THE SYSTEM SHALL produce a label of shape
+`%Y%m%dT%H%M%S.<microseconds>Z` so three replays inside the same
+wall-clock second land on three distinct paths under
+`ops/event-ledger/`. The label SHALL come from a single
+`datetime.now(UTC)` call so the seconds field and the microseconds
+field stay consistent across the format-string boundary.
+
+Acceptance:
+- `scripts/replay_run.py._now_filename_iso` returns a string
+  matching `^[0-9]{8}T[0-9]{6}\.[0-9]{6}Z$`.
+- Three consecutive calls to `_now_filename_iso()` inside the same
+  wall-clock second return three distinct strings.
+- The replay-records glob in the determinism fixture
+  (`replay-<run-id>-*.jsonl`) matches both the legacy per-second
+  format and the new microsecond format during the migration
+  round.
+- The determinism fixture's set-difference assertion that counts
+  fresh ledgers per iteration succeeds with `len(fresh_ledgers) == 1`
+  on every iteration.
+
+### R-EVL-030: CI workflow carries named replay-determinism job
+
+WHEN the `run-evidence-gates.yml` workflow runs, THE SYSTEM SHALL
+carry a named `replay-determinism` job (separate from
+`universal-gates` and `packet-and-replay`) that runs on
+`ubuntu-latest` under Python 3.11, checks out the repo with
+`fetch-depth: 0`, syncs dev deps under uv, runs
+`uv run pytest tests/test_replay_determinism.py -v --no-cov` with
+`RERUNS=3`, and uploads `artifacts/failbundles/` on failure via
+`actions/upload-artifact@v4`.
+
+Acceptance:
+- The workflow file parses as valid YAML and lists
+  `replay-determinism` as a distinct job under `jobs:`.
+- The job carries no `continue-on-error: true` on any step.
+- The job's checkout step sets `fetch-depth: 0` so the recorded
+  sandbox SHA is reachable in the runner.
+- The job's failure-bundle upload step uses
+  `if: failure()` and `if-no-files-found: ignore`.
+- A red determinism fixture turns the job red and blocks the
+  merge per GitHub's default branch-protection contract.

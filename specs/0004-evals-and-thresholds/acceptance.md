@@ -3,7 +3,7 @@
 ## Gates
 
 - `python scripts/voice_lint.py` exits 0 across the new spec files.
-- `python scripts/spec_check.py` exits 0 with R-EVL-001..023 each
+- `python scripts/spec_check.py` exits 0 with R-EVL-001..030 each
   resolved by a per-ID DEC.
 - `python scripts/validate_decisions.py` exits 0 with the new DECs
   parsing clean.
@@ -16,6 +16,9 @@
   the commit recorded in the sample's `sandbox_image_ref` (or, for
   a freshly regenerated sample carrying the PENDING placeholder,
   at any HEAD per the implicit-pin rule from R-EVL-022).
+- `python -m pytest tests/test_replay_determinism.py -v` exits 0
+  with three replays of `run-643dff8f3b9c` producing one SHA-256
+  hash over the three replay-equivalence fields per R-EVL-028.
 
 ## Done means
 

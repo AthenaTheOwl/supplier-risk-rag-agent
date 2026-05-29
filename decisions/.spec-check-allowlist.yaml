@@ -101,6 +101,20 @@ deferred:
   - id: R-EVL-027
     note: covered collectively by DEC-EVL-010-supplier-risk-rag-agent-ci-enforces-run-evidence-chain
 
+  # Round-7 Phase 3 of the run-evidence rollout. R-EVL-028 is
+  # resolved by DEC-EVL-011 directly via the front-matter
+  # `requirement:` field. R-EVL-029..R-EVL-030 are resolved
+  # collectively by the same DEC; the DEC's `## coverage` section
+  # enumerates them. Round-7 Phase 3 amends DEC-EVL-010 by landing
+  # the replay-determinism test fixture, the microsecond-resolution
+  # ledger-filename fix in scripts/replay_run.py, and the named
+  # replay-determinism CI job per the ChatGPT pulse determinism
+  # pattern + the Workflow B audit findings.
+  - id: R-EVL-029
+    note: covered collectively by DEC-EVL-011-supplier-risk-replay-determinism-test
+  - id: R-EVL-030
+    note: covered collectively by DEC-EVL-011-supplier-risk-replay-determinism-test
+
   # Deploy + secrets (spec 0005). R-DEP-001..R-DEP-003 are all
   # resolved by DEC-DEP-001..DEC-DEP-003 respectively. No deferred
   # entries remain for spec 0005.

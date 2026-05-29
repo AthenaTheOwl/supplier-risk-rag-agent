@@ -7,7 +7,7 @@ IDs and pairs the first one with a DEC.
 ## Spec ledger
 
 - [x] `specs/0004-evals-and-thresholds/requirements.md` with
-  R-EVL-001..023.
+  R-EVL-001..030.
 - [x] `specs/0004-evals-and-thresholds/design.md`.
 - [x] `specs/0004-evals-and-thresholds/tasks.md` (this file).
 - [x] `specs/0004-evals-and-thresholds/acceptance.md`.
@@ -35,6 +35,13 @@ IDs and pairs the first one with a DEC.
   DEC-EVL-008 with the cross-repo `repo://` + `artifact://` URI
   grammar from athena-site DEC-CDCP-014 plus the two-pass
   emission pattern that fixes the sandbox_image_ref off-by-one).
+- [x] `decisions/DEC-EVL-010-supplier-risk-rag-agent-ci-enforces-run-evidence-chain.md`
+  resolves R-EVL-024..027 (CI enforcement of the run-evidence
+  chain per athena-site DEC-CDCP-015).
+- [x] `decisions/DEC-EVL-011-supplier-risk-replay-determinism-test.md`
+  resolves R-EVL-028..030 (replay-determinism fixture +
+  microsecond-resolution ledger filenames + named CI job;
+  amends DEC-EVL-010).
 
 ## Code under this spec (already shipped, not changed by this spec)
 
