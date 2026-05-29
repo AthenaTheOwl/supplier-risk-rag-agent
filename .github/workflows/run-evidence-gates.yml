@@ -158,6 +158,31 @@ jobs:
         working-directory: supplier-risk-rag-agent
         run: uv run python scripts/replay_run.py --run-id ${CANONICAL_SAMPLE}
 
+  # Chaos validation contract gate (DEC-EVL-013). Mutates the
+  # canonical sample seven distinct ways and asserts the validator
+  # exits non-zero on each mutation. The suite is the closing-pass
+  # discipline check on the validate_run_evidence.py contract chain:
+  # without it the four cross-checks, the typed-event-payload
+  # validation, and the required-for-done block could silently break
+  # and downstream consumers would treat the corrupt sample as
+  # ground truth. Independent job so a chaos regression fails red on
+  # its own surface; no continue-on-error per DEC-CDCP-015.
+  chaos-validation:
+    name: chaos validation (run-evidence mutations)
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout repo
+        uses: actions/checkout@v4
+
+      - name: setup uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: sync dev deps (Python 3.11)
+        run: uv sync --group dev --python 3.11
+
+      - name: chaos-mutation-suite
+        run: uv run pytest tests/test_chaos_run_evidence.py -v --no-cov
+
   # Replay-determinism contract gate (DEC-EVL-011). Replays the
   # canonical sample RERUNS times (default 3) and asserts the three
   # replay-equivalence fields hash to the same value on every replay.
