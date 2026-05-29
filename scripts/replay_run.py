@@ -138,8 +138,28 @@ def _now_iso() -> str:
 
 
 def _now_filename_iso() -> str:
-    """ISO-ish timestamp safe for use in a filename (no colons)."""
-    return datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
+    """ISO-ish timestamp safe for use in a filename (no colons).
+
+    Carries microsecond resolution so rapid back-to-back replays
+    (e.g. the determinism fixture under
+    ``tests/test_replay_determinism.py`` running three replays
+    inside the same wall-clock second) land on distinct ledger
+    filenames. The legacy per-second format
+    (``%Y%m%dT%H%M%SZ``) collided when two replays opened the
+    ledger within the same second, which in turn made the
+    determinism test report a missing ledger on every rerun
+    after the first.
+
+    A single ``datetime.now(UTC)`` call keeps the seconds field
+    and the microseconds field consistent (a two-call form could
+    straddle a second-boundary tick and produce a malformed
+    label like ``...030.999999Z`` followed by ``...031.000005Z``,
+    which is fine for uniqueness but harder to reason about).
+    The trailing ``Z`` mirrors the ISO-8601 UTC marker the
+    legacy format already used.
+    """
+    now = datetime.now(UTC)
+    return f"{now:%Y%m%dT%H%M%S}.{now.microsecond:06d}Z"
 
 
 def _safe_rel(path: Path) -> str:
