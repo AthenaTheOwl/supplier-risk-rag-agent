@@ -157,3 +157,38 @@ jobs:
       - name: replay-smoke
         working-directory: supplier-risk-rag-agent
         run: uv run python scripts/replay_run.py --run-id ${CANONICAL_SAMPLE}
+
+  # Replay-determinism contract gate (DEC-EVL-011). Replays the
+  # canonical sample RERUNS times (default 3) and asserts the three
+  # replay-equivalence fields hash to the same value on every replay.
+  # Catches drift in prompts, tool schemas, or gate sets between
+  # nominally-identical runs that the single-shot replay-smoke gate
+  # in packet-and-replay would not surface. Independent job: contract
+  # gate, no continue-on-error per DEC-CDCP-015.
+  replay-determinism:
+    name: replay determinism (canonical sample)
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout repo (full history for sandbox-SHA checkout)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: setup uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: sync dev deps (Python 3.11)
+        run: uv sync --group dev --python 3.11
+
+      - name: replay-determinism fixture
+        env:
+          RERUNS: "3"
+        run: uv run pytest tests/test_replay_determinism.py -v --no-cov
+
+      - name: upload failure bundle on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: replay-determinism-failbundle
+          path: artifacts/failbundles/
+          if-no-files-found: ignore
