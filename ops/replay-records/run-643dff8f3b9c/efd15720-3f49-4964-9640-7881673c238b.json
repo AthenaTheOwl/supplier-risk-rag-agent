@@ -1,0 +1,43 @@
+{
+  "comparison": {
+    "gate_results_summary": {
+      "fresh": {
+        "all_passed": true,
+        "gates_failed": [],
+        "gates_passed": [
+          "refusal_precision_threshold"
+        ]
+      },
+      "match": true,
+      "recorded": {
+        "all_passed": true,
+        "gates_failed": [],
+        "gates_passed": [
+          "refusal_precision_threshold"
+        ]
+      }
+    },
+    "prompt_snapshot_hash": {
+      "fresh": "39c8c12b83a75b82aede7425dc3196c415c20b48c047f0f4cb79c7354f9c441b",
+      "match": true,
+      "recorded": "39c8c12b83a75b82aede7425dc3196c415c20b48c047f0f4cb79c7354f9c441b"
+    },
+    "replay_equivalent": true,
+    "tool_schemas_snapshot_hash": {
+      "fresh": "e08826891cebceb4cf181a4195bc19558d503a83adf7b7c73cd7a6d43fb0b157",
+      "match": true,
+      "recorded": "e08826891cebceb4cf181a4195bc19558d503a83adf7b7c73cd7a6d43fb0b157"
+    }
+  },
+  "fresh_run_id": "run-085b9b48a181",
+  "fresh_run_status": "done",
+  "recorded_run_status": "done",
+  "replay_equivalent": true,
+  "replay_event_id": "efd15720-3f49-4964-9640-7881673c238b",
+  "replay_event_ledger": "ops/event-ledger/replay-run-643dff8f3b9c-20260529T180257Z.jsonl",
+  "replay_method": "equivalence",
+  "replayed_at": "2026-05-29T18:02:57Z",
+  "source_event_ledger": "ops/event-ledger/run-643dff8f3b9c.jsonl",
+  "source_run_id": "run-643dff8f3b9c",
+  "source_run_record": "ops/run-records/run-643dff8f3b9c.json"
+}
