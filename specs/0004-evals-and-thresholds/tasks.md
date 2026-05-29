@@ -7,7 +7,7 @@ IDs and pairs the first one with a DEC.
 ## Spec ledger
 
 - [x] `specs/0004-evals-and-thresholds/requirements.md` with
-  R-EVL-001..019.
+  R-EVL-001..023.
 - [x] `specs/0004-evals-and-thresholds/design.md`.
 - [x] `specs/0004-evals-and-thresholds/tasks.md` (this file).
 - [x] `specs/0004-evals-and-thresholds/acceptance.md`.
@@ -30,6 +30,11 @@ IDs and pairs the first one with a DEC.
   R-EVL-016..019 (Round-5 of the run-evidence rollout; amends
   DEC-EVL-007 with the equivalence-replay command shipped as
   `scripts/replay_run.py`).
+- [x] `decisions/DEC-EVL-009-supplier-risk-rag-agent-portable-repo-uri-migration.md`
+  resolves R-EVL-020..023 (Round-6 portable-URI migration; amends
+  DEC-EVL-008 with the cross-repo `repo://` + `artifact://` URI
+  grammar from athena-site DEC-CDCP-014 plus the two-pass
+  emission pattern that fixes the sandbox_image_ref off-by-one).
 
 ## Code under this spec (already shipped, not changed by this spec)
 
@@ -68,15 +73,45 @@ IDs and pairs the first one with a DEC.
   prompt and tool-surface hashes stay byte-identical, only the
   sandbox SHA, the event timestamps, and the event UUIDs change).
 
+## Code added under R-EVL-020..023 (Round-6 portable-URI migration)
+
+- `src/evals/run_evidence.py` URI helpers (`REPO_NAME`,
+  `PENDING_SHA_TOKEN`, `repo_uri`, `artifact_uri`,
+  `repo_relative`) and the two-pass `derive_sandbox_image_ref`
+  signature.
+- `src/evals/runner.py` per-suite Run-record assembly now uses
+  `repo_uri()` on the input ref and sets `workspace_id` to the
+  bare repo identity token.
+- `scripts/validate_run_evidence.py` adds the `resolve_uri`
+  helper plus the `_REPO_URI_RE` + `_ARTIFACT_URI_RE`
+  patterns.
+- `scripts/replay_run.py` mirrors the URI regex, accepts the
+  legacy `<abs-path>@<sha>` shape during the migration round,
+  and treats the `PENDING` placeholder as the implicit pin to
+  current HEAD.
+- `scripts/finalize_sandbox_ref.py` is the post-commit
+  rewrite step that swaps `PENDING` for the data-containing
+  commit's SHA.
+- `tests/test_run_evidence.py` extends the unit tests with URI
+  helpers + `resolve_uri` positive/negative branches.
+- `tests/test_replay_run.py` adds a positive test for the
+  PENDING auto-resolve path and finalizes the sandbox SHA in
+  the prompt-drift and gate-rollup-drift negative tests.
+- Regenerated sample at `ops/run-records/run-643dff8f3b9c.json`
+  plus `ops/event-ledger/run-643dff8f3b9c.jsonl` emitted under
+  the new URI grammar with the finalized SHA in place.
+
 ## Verification
 
-- [x] `python scripts/spec_check.py` exits 0 with R-EVL-001..019
+- [x] `python scripts/spec_check.py` exits 0 with R-EVL-001..023
   resolved.
 - [x] `python scripts/validate_decisions.py` exits 0 with the new
   DEC parsing clean.
 - [x] `python scripts/validate_run_evidence.py` exits 0 against the
-  produced ledger + Run record plus the per-replay ledger.
+  produced ledger + Run record.
 - [x] `python -m src.evals.runner --suite all` stays green
   across all four suites.
-- [x] `python scripts/replay_run.py --run-id run-2eab3c611b6a`
-  exits 0 with `replay_equivalent: true` on all three signals.
+- [x] `python scripts/replay_run.py --run-id run-643dff8f3b9c`
+  exits 0 with `replay_equivalent: true` on all three signals
+  when run at the commit recorded in the sample's
+  `sandbox_image_ref`.

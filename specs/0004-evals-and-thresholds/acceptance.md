@@ -3,7 +3,7 @@
 ## Gates
 
 - `python scripts/voice_lint.py` exits 0 across the new spec files.
-- `python scripts/spec_check.py` exits 0 with R-EVL-001..019 each
+- `python scripts/spec_check.py` exits 0 with R-EVL-001..023 each
   resolved by a per-ID DEC.
 - `python scripts/validate_decisions.py` exits 0 with the new DECs
   parsing clean.
@@ -11,9 +11,11 @@
   ledger and Run records emitted by the runner plus the per-replay
   ledger written by `scripts/replay_run.py`.
 - `python -m src.evals.runner --suite all` stays green.
-- `python scripts/replay_run.py --run-id run-2eab3c611b6a` exits 0
+- `python scripts/replay_run.py --run-id run-643dff8f3b9c` exits 0
   with `replay_equivalent: true` on all three signals when run at
-  the commit recorded in the sample's `sandbox_image_ref`.
+  the commit recorded in the sample's `sandbox_image_ref` (or, for
+  a freshly regenerated sample carrying the PENDING placeholder,
+  at any HEAD per the implicit-pin rule from R-EVL-022).
 
 ## Done means
 
@@ -35,6 +37,16 @@ Spec 0004 is done when:
    equivalence replay emitting one `run.evidence.replayed` event
    per replay into a new per-replay ledger file plus a detailed
    comparison report under `ops/replay-records/<run-id>/`.
+7. R-EVL-020..023 resolved by DEC-EVL-009 (Round-6 portable-URI
+   migration) and the eval-suite emitter produces portable
+   `repo://supplier-risk-rag-agent@<sha>/<path>` URIs in
+   `sandbox_image_ref` and `inputs[].ref` plus the bare repo
+   identity token on `workspace_id`. The validator and replay
+   command accept both URI shapes and the legacy local path
+   during the migration round.
+   `scripts/finalize_sandbox_ref.py` closes the two-pass
+   emission loop so the recorded SHA pins the data-bearing
+   commit instead of its parent.
 
 ## Explicit non-acceptance
 

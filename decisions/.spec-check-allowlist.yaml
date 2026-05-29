@@ -73,6 +73,20 @@ deferred:
   - id: R-EVL-019
     note: covered collectively by DEC-EVL-008-eval-replay-command
 
+  # Round-6 of the run-evidence rollout. R-EVL-020 is resolved by
+  # DEC-EVL-009 directly via the front-matter `requirement:` field.
+  # R-EVL-021..R-EVL-023 are resolved collectively by the same DEC;
+  # the DEC's `## coverage` section enumerates them. Round-6 amends
+  # DEC-EVL-008 with the portable repo:// + artifact:// URI grammar
+  # from athena-site DEC-CDCP-014 plus the two-pass emission
+  # pattern that fixes the sandbox_image_ref off-by-one.
+  - id: R-EVL-021
+    note: covered collectively by DEC-EVL-009-supplier-risk-rag-agent-portable-repo-uri-migration
+  - id: R-EVL-022
+    note: covered collectively by DEC-EVL-009-supplier-risk-rag-agent-portable-repo-uri-migration
+  - id: R-EVL-023
+    note: covered collectively by DEC-EVL-009-supplier-risk-rag-agent-portable-repo-uri-migration
+
   # Deploy + secrets (spec 0005). R-DEP-001..R-DEP-003 are all
   # resolved by DEC-DEP-001..DEC-DEP-003 respectively. No deferred
   # entries remain for spec 0005.

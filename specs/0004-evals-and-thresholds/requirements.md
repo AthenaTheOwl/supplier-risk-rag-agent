@@ -311,3 +311,85 @@ Acceptance:
 - The source ledger file at
   `ops/event-ledger/<run-id>.jsonl` is byte-identical before and
   after the replay command runs.
+
+### R-EVL-020: run-evidence emitter produces portable repo:// URIs
+
+WHEN the eval-suite runner emits a Run record, THE SYSTEM SHALL
+populate `Run.sandbox_image_ref` as
+`repo://supplier-risk-rag-agent@<sha>/`, every
+`Run.inputs[].ref` as
+`repo://supplier-risk-rag-agent@<sha>/<rel-path>`, and
+`Run.workspace_id` as the bare repo identity token
+`supplier-risk-rag-agent` per the cross-repo URI grammar defined
+in athena-site DEC-CDCP-014.
+
+Acceptance:
+- `Run.sandbox_image_ref` matches
+  `^repo://supplier-risk-rag-agent@([a-f0-9]{40}|PENDING)/$`.
+- Every `Run.inputs[].ref` whose path lives inside the repo
+  matches
+  `^repo://supplier-risk-rag-agent@([a-f0-9]{40}|PENDING)/.+$`.
+- `Run.workspace_id` equals the literal string
+  `supplier-risk-rag-agent`.
+- The producer-side URI helpers (`repo_uri`, `artifact_uri`,
+  `repo_relative`) live in `src/evals/run_evidence.py`.
+
+### R-EVL-021: validator resolves repo:// URIs and accepts legacy paths
+
+WHEN `scripts/validate_run_evidence.py` runs, THE SYSTEM SHALL
+ship a `resolve_uri` helper that returns a local file path for
+`repo://` URIs, returns `None` for `artifact://` URIs, and
+passes legacy local paths through unchanged.
+
+Acceptance:
+- `resolve_uri("repo://supplier-risk-rag-agent@<sha>/<path>")`
+  returns `<portfolio-root>/supplier-risk-rag-agent/<path>` as
+  a `Path` object.
+- `resolve_uri("artifact://supplier-risk-rag-agent/<id>")`
+  returns `None`.
+- `resolve_uri("/abs/legacy/path")` returns
+  `Path("/abs/legacy/path")` unchanged.
+- A malformed URI that does not match either scheme falls
+  through to the legacy-path branch.
+
+### R-EVL-022: replay extracts SHA from URI grammar with PENDING tolerance
+
+WHEN `scripts/replay_run.py` parses the recorded
+`Run.sandbox_image_ref`, THE SYSTEM SHALL pull the SHA out of
+either the new `repo://supplier-risk-rag-agent@<sha>/` shape
+(via the same regex the validator uses) or the legacy
+`<abs-path>@<sha>` shape (via a split on the last `@`). The
+HEAD-strict pre-flight SHALL treat the `PENDING` placeholder
+as "current HEAD is the implicit pin" so a freshly regenerated
+sample replays without an intervening finalize step.
+
+Acceptance:
+- A Run record with the new URI shape and a real 40-char SHA
+  drives HEAD-strict against the SHA group.
+- A Run record with the legacy `<abs-path>@<sha>` shape still
+  parses (backwards compatibility during the migration round).
+- A Run record carrying
+  `repo://supplier-risk-rag-agent@PENDING/` runs replay against
+  current HEAD without erroring on the placeholder.
+
+### R-EVL-023: sandbox_image_ref off-by-one fixed via two-pass emission
+
+WHEN the eval-suite runner emits a Run record, THE SYSTEM SHALL
+record `PENDING` in place of the sandbox SHA, and
+`scripts/finalize_sandbox_ref.py` SHALL rewrite the placeholder
+to the SHA of the commit that physically contains the
+data-bearing Run record on disk.
+
+Acceptance:
+- The fresh-emit Run record carries
+  `sandbox_image_ref == "repo://supplier-risk-rag-agent@PENDING/"`.
+- `scripts/finalize_sandbox_ref.py --run-id <id> --sha <sha>`
+  rewrites the placeholder to
+  `repo://supplier-risk-rag-agent@<sha>/` in place, preserving
+  the existing serialization shape (sorted keys, two-space
+  indent, trailing newline).
+- The finalize step is idempotent: rewriting an
+  already-finalized record with the same SHA is a no-op;
+  rewriting with a different SHA requires `--force`.
+- After finalize, the recorded SHA matches the
+  data-containing commit, not its parent.

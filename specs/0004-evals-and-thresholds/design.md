@@ -109,3 +109,50 @@ The runner emits a `pipeline.done` event before
 `gate.run.evidence_recorded` so a downstream consumer that scans on
 the typed `pipeline.done` payload finds the gate rollup without
 walking the Run record.
+
+## Round-6 portable-URI migration (R-EVL-020..023)
+
+The eval-suite emitter produces refs in the portable
+`repo://<repo>@<sha>/<rel-path>` grammar defined in athena-site
+DEC-CDCP-014 instead of the producer's local absolute path. The
+grammar pins three Run-record fields:
+
+| Field | Shape | Notes |
+|---|---|---|
+| `sandbox_image_ref` | `repo://supplier-risk-rag-agent@<sha>/` | Empty path after the slash. SHA may be a 40-char hex or the `PENDING` sentinel before finalize. |
+| `inputs[].ref` | `repo://supplier-risk-rag-agent@<sha>/<rel-path>` | `<rel-path>` is the path inside the repo (forward slashes). |
+| `workspace_id` | `supplier-risk-rag-agent` | Identity token, not a file ref. No scheme prefix, no SHA. |
+
+`scripts/validate_run_evidence.py` and `scripts/replay_run.py`
+each ship a `resolve_uri(uri, portfolio_root)` helper per the
+consumer-side rule from DEC-CDCP-014. The helper maps a `repo://`
+URI to `<portfolio_root>/<repo>/<rel-path>`, returns None for an
+`artifact://` URI, and passes a legacy local path through
+unchanged. Both consumers continue to accept the legacy
+`<abs-path>@<sha>` form during the migration round.
+
+### sandbox_image_ref off-by-one fix (Option A: two-pass emit)
+
+The single-pass emitter called `git rev-parse HEAD` at emit-time
+and recorded the parent of the commit that physically writes
+the sample to disk. Round 6 closes the off-by-one with a
+two-pass pattern:
+
+```mermaid
+flowchart LR
+  EMIT["src/evals/runner.py"] -->|PENDING placeholder| REC1["Run record (PENDING)"]
+  REC1 -->|git commit| COMMIT["data-bearing commit (SHA-A)"]
+  COMMIT -->|scripts/finalize_sandbox_ref.py --sha SHA-A| REC2["Run record (SHA-A)"]
+  REC2 -->|git commit| FINAL["finalize commit"]
+```
+
+Step 1 emits PENDING. Step 2 commits the data files. Step 3
+runs `finalize_sandbox_ref.py` with the SHA of the data-bearing
+commit. Step 4 commits the rewritten JSON.
+
+Replay's HEAD-strict pre-flight treats the PENDING placeholder
+as "current HEAD is the implicit pin" so a freshly regenerated
+sample (still carrying PENDING) stays verifiable without an
+intervening finalize step. Once finalize lands a real SHA the
+strict equality branch fires as before, naming the recorded SHA
+and the current HEAD in the divergence message.
