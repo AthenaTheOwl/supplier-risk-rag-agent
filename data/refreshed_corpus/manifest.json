@@ -1,0 +1,39 @@
+{
+  "chunk_file": "chunks.jsonl",
+  "companies": [
+    {
+      "accessions": [
+        "0001628280-25-056742"
+      ],
+      "chunk_count": 2,
+      "cik": "0000006951",
+      "company": "Applied Materials Inc.",
+      "ticker": "AMAT"
+    },
+    {
+      "accessions": [
+        "0001045810-26-000021"
+      ],
+      "chunk_count": 2,
+      "cik": "0001045810",
+      "company": "NVIDIA Corp",
+      "ticker": "NVDA"
+    },
+    {
+      "accessions": [
+        "0001628280-26-025362"
+      ],
+      "chunk_count": 2,
+      "cik": "0001046179",
+      "company": "Taiwan Semiconductor Manufacturing Co Ltd",
+      "ticker": "TSM"
+    }
+  ],
+  "generated_at": "2026-05-29T17:13:57Z",
+  "note": "Filings planned: 3; filings written: 3; chunks before truncation: 1073; chunks after per-CIK cap: 6.",
+  "source": "live_edgar",
+  "totals": {
+    "chunks_written": 6,
+    "companies": 3
+  }
+}
