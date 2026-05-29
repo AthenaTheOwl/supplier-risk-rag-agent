@@ -115,6 +115,18 @@ deferred:
   - id: R-EVL-030
     note: covered collectively by DEC-EVL-011-supplier-risk-replay-determinism-test
 
+  # Round-7 Phase 4 of the run-evidence rollout. R-EVL-031 is
+  # resolved by DEC-EVL-012 directly via the front-matter
+  # `requirement:` field. R-EVL-032..R-EVL-033 are resolved
+  # collectively by the same DEC; the DEC's `## coverage` section
+  # enumerates them. The DEC amends DEC-EVL-011 by landing the
+  # live EDGAR refresh script + the adversarial refusal precision
+  # eval suite.
+  - id: R-EVL-032
+    note: covered collectively by DEC-EVL-012-edgar-refresh-and-adversarial-refusal-suite
+  - id: R-EVL-033
+    note: covered collectively by DEC-EVL-012-edgar-refresh-and-adversarial-refusal-suite
+
   # Deploy + secrets (spec 0005). R-DEP-001..R-DEP-003 are all
   # resolved by DEC-DEP-001..DEC-DEP-003 respectively. No deferred
   # entries remain for spec 0005.

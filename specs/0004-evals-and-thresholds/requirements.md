@@ -550,3 +550,82 @@ Acceptance:
   `if: failure()` and `if-no-files-found: ignore`.
 - A red determinism fixture turns the job red and blocks the
   merge per GitHub's default branch-protection contract.
+
+### R-EVL-031: live EDGAR refresh script writes a bounded fixture
+
+WHEN an operator runs the EDGAR refresh wrapper script, THE SYSTEM
+SHALL fetch one annual filing from each of three configured CIKs
+(NVDA, TSM, AMAT), keyword-rank the resulting chunks against a
+supplier-risk vocabulary, truncate to two chunks per CIK, and write
+the fixture to `data/refreshed_corpus/chunks.jsonl` plus a refresh
+manifest to `data/refreshed_corpus/manifest.json`. The canonical
+sample corpus at `data/sample_corpus/` SHALL NOT be touched.
+
+Acceptance:
+- `scripts/refresh_sample_corpus.py` exists and parses as Python.
+- The script reads a three-CIK manifest (NVDA, TSM, AMAT) and
+  calls `refresh_edgar_corpus` with `max_per_cik=1` and
+  `filing_types=["10-K", "20-F"]`.
+- The script truncates each CIK's chunk set by keyword overlap
+  with the `RISK_KEYWORDS` vocabulary and keeps the top two
+  chunks per CIK.
+- The script falls back to an offline-stub fixture when the SEC
+  fetch fails; the refresh manifest's `source` field records
+  which path produced the fixture (`live_edgar` or `offline_stub`).
+- The output JSONL loads through `load_jsonl_corpus` without a
+  separate parser.
+
+### R-EVL-032: adversarial refusal precision suite covers in-scope-looking adversarial queries
+
+WHEN the eval-suite runner runs the
+`adversarial_refusal_precision` suite, THE SYSTEM SHALL load 10
+adversarial supplier-risk cases from
+`eval_suites/adversarial_refusal_precision.yaml`, evaluate
+abstention against each case via `evaluate_abstention`, and gate
+the run at `refusal_precision >= 0.85`. The agent's refusal logic
+SHALL refuse any query whose lowercased text matches a phrase in
+the `ADVERSARIAL_PHRASES` set in `src/agent/refusal.py`.
+
+Acceptance:
+- `eval_suites/adversarial_refusal_precision.yaml` carries 10
+  adversarial cases, each marked `expected_refusal: true` with an
+  `expected_behavior` label.
+- `src/agent/refusal.py` carries the `ADVERSARIAL_PHRASES` set
+  plus a new branch in `should_refuse` that triggers when any
+  phrase matches the lowercased query.
+- `src/evals/runner.py` carries `adversarial_refusal_precision`
+  under `GATES`, `GATE_LABELS`, `_evaluate_suite`, and
+  `_tool_name_for_suite`.
+- The four pre-existing eval suites (retrieval_quality,
+  citation_faithfulness, supplier_risk_questions, refusal_cases)
+  stay green at the same scores after the refusal-logic update.
+- `python -m src.evals.runner --suite adversarial_refusal_precision`
+  exits 0 with a 1.000 refusal precision score against the 10
+  shipped cases.
+
+### R-EVL-033: adversarial refusal suite emits conformant run evidence
+
+WHEN the eval-suite runner finishes the
+`adversarial_refusal_precision` suite, THE SYSTEM SHALL write a
+Run record at `ops/run-records/<run-id>.json` and a ledger at
+`ops/event-ledger/<run-id>.jsonl` that pass
+`scripts/validate_run_evidence.py`. Reports at
+`reports/adversarial_refusal_precision_report.html` and
+`reports/adversarial_refusal_precision_metrics.json` SHALL carry
+the same data in the report shape the existing suites use.
+
+Acceptance:
+- The Run record carries `spec_id ==
+  "eval_suites/adversarial_refusal_precision.yaml"` and the
+  required-for-done replay fields (`prompt_snapshot_hash`,
+  `tool_schemas_snapshot_hash`, `sandbox_image_ref`,
+  `gate_results_summary`).
+- The ledger carries `pipeline.start`, `tool.call.completed`,
+  one `gate.check.passed` or `gate.check.failed`,
+  `pipeline.done`, and `gate.run.evidence_recorded` events with
+  the matching `run_id`.
+- `scripts/validate_run_evidence.py` exits zero against the
+  produced ledger and Run record.
+- The HTML and JSON reports under `reports/` carry the same
+  per-suite metric shape as the existing
+  `baseline_eval_report.html`.

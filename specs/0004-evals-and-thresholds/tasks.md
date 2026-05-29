@@ -7,7 +7,7 @@ IDs and pairs the first one with a DEC.
 ## Spec ledger
 
 - [x] `specs/0004-evals-and-thresholds/requirements.md` with
-  R-EVL-001..030.
+  R-EVL-001..033.
 - [x] `specs/0004-evals-and-thresholds/design.md`.
 - [x] `specs/0004-evals-and-thresholds/tasks.md` (this file).
 - [x] `specs/0004-evals-and-thresholds/acceptance.md`.
@@ -42,6 +42,10 @@ IDs and pairs the first one with a DEC.
   resolves R-EVL-028..030 (replay-determinism fixture +
   microsecond-resolution ledger filenames + named CI job;
   amends DEC-EVL-010).
+- [x] `decisions/DEC-EVL-012-edgar-refresh-and-adversarial-refusal-suite.md`
+  resolves R-EVL-031..033 (live EDGAR refresh script +
+  refreshed_corpus fixture + adversarial refusal precision eval
+  suite + paired refusal-logic update; amends DEC-EVL-011).
 
 ## Code under this spec (already shipped, not changed by this spec)
 
@@ -108,9 +112,28 @@ IDs and pairs the first one with a DEC.
   plus `ops/event-ledger/run-643dff8f3b9c.jsonl` emitted under
   the new URI grammar with the finalized SHA in place.
 
+## Code added under R-EVL-031..033 (EDGAR refresh + adversarial refusal suite)
+
+- `scripts/refresh_sample_corpus.py` (three-CIK manifest +
+  keyword-overlap truncation + offline-stub fallback).
+- `data/refreshed_corpus/chunks.jsonl` + `manifest.json` (live
+  EDGAR fixture from NVDA + TSM + AMAT 10-K / 20-F filings).
+- `eval_suites/adversarial_refusal_precision.yaml` (10
+  adversarial supplier-risk cases).
+- `src/agent/refusal.py` (`ADVERSARIAL_PHRASES` set + matching
+  branch in `should_refuse`).
+- `src/evals/runner.py` (new entries in `GATES`, `GATE_LABELS`,
+  `_evaluate_suite`, `_tool_name_for_suite`).
+- `ops/run-records/run-c63148a1afa2.json` +
+  `ops/event-ledger/run-c63148a1afa2.jsonl` (initial run-evidence
+  for the new suite).
+- `reports/adversarial_refusal_precision_report.html` +
+  `reports/adversarial_refusal_precision_metrics.json` (HTML +
+  JSON reports for the initial run).
+
 ## Verification
 
-- [x] `python scripts/spec_check.py` exits 0 with R-EVL-001..023
+- [x] `python scripts/spec_check.py` exits 0 with R-EVL-001..033
   resolved.
 - [x] `python scripts/validate_decisions.py` exits 0 with the new
   DEC parsing clean.

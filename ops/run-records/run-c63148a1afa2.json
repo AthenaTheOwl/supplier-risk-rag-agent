@@ -12,13 +12,13 @@
   "inputs": [
     {
       "kind": "eval_suite",
-      "ref": "repo://supplier-risk-rag-agent@PENDING/eval_suites/adversarial_refusal_precision.yaml"
+      "ref": "repo://supplier-risk-rag-agent@938297ca281b478bdc12f267381f6d4b619e136d/eval_suites/adversarial_refusal_precision.yaml"
     }
   ],
   "outputs": [],
   "prompt_snapshot_hash": "39c8c12b83a75b82aede7425dc3196c415c20b48c047f0f4cb79c7354f9c441b",
   "runtime": "supplier-risk-rag-agent-evals",
-  "sandbox_image_ref": "repo://supplier-risk-rag-agent@PENDING/",
+  "sandbox_image_ref": "repo://supplier-risk-rag-agent@938297ca281b478bdc12f267381f6d4b619e136d/",
   "spec_id": "eval_suites/adversarial_refusal_precision.yaml",
   "started_at": "2026-05-29T17:17:10Z",
   "status": "done",
