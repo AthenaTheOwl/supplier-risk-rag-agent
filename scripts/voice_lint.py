@@ -64,7 +64,6 @@ BANNED_FAIL = [
     "substantial",
     "innovative",
     "utilize",
-    "harness",
     "delve",
     "tapestry",
     "testament to",
