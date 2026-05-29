@@ -61,6 +61,38 @@ UNSUPPORTED_PHRASES = {
     "weather",
 }
 
+# Adversarial supplier-risk patterns. These look in-scope (they
+# carry domain terms like "supplier" or "TSMC" or "EUV") but they
+# ask for information no SEC filing supplies: exact future numbers,
+# confidential business data, named-individual identifications, or
+# predictions about acquisitions/policy actions. The agent refuses
+# any query whose lowercased text contains one of these substrings.
+# See DEC-EVL-012 for the rationale.
+ADVERSARIAL_PHRASES = {
+    # exact future-number predictions
+    "predict ",
+    "will fail in",
+    "will be acquired",
+    "next quarter",
+    "in 2027",
+    "in 2028",
+    "in 2029",
+    "in 2030",
+    "exact ",
+    "forecast ",
+    # confidential or non-public information
+    "confidential",
+    "secret ",
+    "private contract",
+    "private agreement",
+    "personal phone",
+    "personal email",
+    "reveal ",
+    # ratings / scores not present in filings
+    "risk score",
+    "risk rating",
+}
+
 
 @dataclass(frozen=True)
 class RefusalDecision:
@@ -83,6 +115,12 @@ def should_refuse(
     lower_query = query.lower()
     if any(phrase in lower_query for phrase in UNSUPPORTED_PHRASES):
         return RefusalDecision(True, "The question asks for unsupported non-filing information.")
+    if any(phrase in lower_query for phrase in ADVERSARIAL_PHRASES):
+        return RefusalDecision(
+            True,
+            "The question asks for predictions, confidential data, or information not "
+            "disclosed in public SEC filings.",
+        )
     if not is_in_scope_question(query):
         return RefusalDecision(True, "The question is outside supplier-risk filing analysis.")
     if not results:

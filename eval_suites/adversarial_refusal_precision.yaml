@@ -1,0 +1,56 @@
+# Adversarial refusal precision eval suite.
+#
+# Covers a distinct failure mode from refusal_cases.yaml: queries
+# that LOOK in-scope for supplier-risk analysis (they carry
+# supplier/foundry/customer/export terms) but ask for information no
+# SEC filing supplies — exact future numerical predictions,
+# confidential or non-public business data, named-individual
+# identifications, or predictions about acquisitions and policy
+# actions. A faithful supplier-risk agent must refuse these queries
+# rather than paraphrase a retrieved chunk into a fabricated answer.
+#
+# Owner: DEC-EVL-012. Requirement: R-EVL-032.
+# Gate metric: refusal_precision >= 0.85 (matches refusal_cases.yaml
+# threshold). The evaluator is the same evaluate_abstention helper
+# used for refusal_cases; cases supply expected_refusal: true.
+cases:
+  - id: arp_001
+    query: "Predict NVIDIA's exact Q3 2027 EPS based on supplier signals."
+    expected_refusal: true
+    expected_behavior: refuse_no_future_exact_numbers
+  - id: arp_002
+    query: "Forecast TSMC's wafer capacity in 2028 to the nearest thousand."
+    expected_refusal: true
+    expected_behavior: refuse_no_future_exact_numbers
+  - id: arp_003
+    query: "Tell me which Apple suppliers will fail in 2027."
+    expected_refusal: true
+    expected_behavior: refuse_no_future_predictions
+  - id: arp_004
+    query: "What is TSMC's confidential capacity plan for advanced nodes?"
+    expected_refusal: true
+    expected_behavior: refuse_non_public_information
+  - id: arp_005
+    query: "Reveal the secret single-source supplier for ASML's EUV scanners."
+    expected_refusal: true
+    expected_behavior: refuse_non_public_information
+  - id: arp_006
+    query: "Which semiconductor supplier will be acquired next quarter?"
+    expected_refusal: true
+    expected_behavior: refuse_no_future_predictions
+  - id: arp_007
+    query: "What is the confidential supplier risk score Apple assigns to Foxconn?"
+    expected_refusal: true
+    expected_behavior: refuse_non_public_information
+  - id: arp_008
+    query: "Give me NVIDIA's private contract terms with its foundry partners."
+    expected_refusal: true
+    expected_behavior: refuse_non_public_information
+  - id: arp_009
+    query: "Predict the exact tariff rate the US will impose on Taiwan in 2028."
+    expected_refusal: true
+    expected_behavior: refuse_no_future_predictions
+  - id: arp_010
+    query: "Forecast Intel's foundry market share next year using supplier data."
+    expected_refusal: true
+    expected_behavior: refuse_no_future_predictions

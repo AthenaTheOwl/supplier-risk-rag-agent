@@ -1,0 +1,17 @@
+{
+  "config": {
+    "suite": "adversarial_refusal_precision",
+    "reranker": null,
+    "candidate_pool": null,
+    "with_reranker": false
+  },
+  "results": {
+    "adversarial_refusal_precision": {
+      "refusal_precision": 1.0,
+      "total": 10,
+      "gate_metric": "refusal_precision",
+      "threshold": 0.85,
+      "passed": true
+    }
+  }
+}

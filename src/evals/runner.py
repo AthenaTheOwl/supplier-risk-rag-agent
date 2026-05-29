@@ -38,6 +38,12 @@ GATES = {
     "citation_faithfulness": ("faithfulness", 0.95),
     "supplier_risk_questions": ("answer_quality", 0.80),
     "refusal_cases": ("refusal_precision", 0.85),
+    # DEC-EVL-012: adversarial refusal precision suite. Same gate
+    # metric and threshold shape as ``refusal_cases``; the suite
+    # targets a distinct failure mode (in-scope-looking adversarial
+    # queries that should still refuse) rather than the broad
+    # out-of-scope cases the original suite covers.
+    "adversarial_refusal_precision": ("refusal_precision", 0.85),
 }
 
 # Event-ledger and run-record output directories. Tests may redirect
@@ -58,6 +64,7 @@ GATE_LABELS = {
     "citation_faithfulness": "citation_faithfulness_threshold",
     "supplier_risk_questions": "answer_quality_threshold",
     "refusal_cases": "refusal_precision_threshold",
+    "adversarial_refusal_precision": "adversarial_refusal_precision_threshold",
 }
 
 
@@ -141,6 +148,11 @@ def _evaluate_suite(name: str, ranker: HybridRanker, agent: SupplierRiskAgent) -
     elif name == "supplier_risk_questions":
         metrics = asdict(evaluate_regression(cases, agent))
     elif name == "refusal_cases":
+        metrics = asdict(evaluate_abstention(cases, agent))
+    elif name == "adversarial_refusal_precision":
+        # Same evaluator surface as ``refusal_cases``; the YAML
+        # carries adversarial supplier-risk queries instead of
+        # generic out-of-scope queries.
         metrics = asdict(evaluate_abstention(cases, agent))
     else:
         raise ValueError(f"Unknown suite: {name}")
@@ -356,6 +368,7 @@ def _tool_name_for_suite(suite_name: str) -> str:
         "citation_faithfulness": "agent.answer+citation.verify",
         "supplier_risk_questions": "agent.answer",
         "refusal_cases": "agent.answer+refusal.decision",
+        "adversarial_refusal_precision": "agent.answer+refusal.decision",
     }[suite_name]
 
 
