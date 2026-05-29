@@ -221,6 +221,33 @@ def test_replay_equivalent_against_freshly_generated_sample(tmp_path: Path) -> N
         assert report["comparison"][key]["match"] is True
 
 
+def test_replay_treats_pending_sandbox_ref_as_implicit_head(
+    tmp_path: Path,
+) -> None:
+    """A PENDING placeholder ref auto-resolves to current HEAD on replay.
+
+    The two-pass emission pattern from DEC-EVL-009 lands the Run
+    record with a ``repo://supplier-risk-rag-agent@PENDING/``
+    sentinel before ``scripts/finalize_sandbox_ref.py`` rewrites
+    the SHA. Replay must tolerate the placeholder so an operator
+    can verify a freshly regenerated sample against the same
+    commit without an intervening finalize step.
+    """
+    records_dir, ledger_dir, replay_dir = _redirected_layout(tmp_path)
+    env = _redirected_env(records_dir, ledger_dir, replay_dir)
+    run_id, record_path, _ = _generate_sample(env)
+
+    record = json.loads(record_path.read_text(encoding="utf-8"))
+    assert record["sandbox_image_ref"].endswith("@PENDING/")
+
+    result = _invoke_replay(run_id, env)
+    assert result.returncode == 0, (
+        f"replay should accept PENDING sentinel: stdout={result.stdout!r} "
+        f"stderr={result.stderr!r}"
+    )
+    assert "equivalent" in result.stdout
+
+
 # --------------------------------------------------------------------- negative
 
 

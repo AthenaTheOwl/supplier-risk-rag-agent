@@ -169,6 +169,11 @@ def _git_head_sha(repo: Path) -> str | None:
     return head
 
 
+_PENDING_SANDBOX_RE = re.compile(
+    r"^repo://(?P<repo>[a-z][a-z0-9-]*)@PENDING/$"
+)
+
+
 def _parse_sandbox_sha(sandbox_image_ref: str) -> str | None:
     """Pull the HEAD SHA out of a sandbox_image_ref.
 
@@ -178,9 +183,18 @@ def _parse_sandbox_sha(sandbox_image_ref: str) -> str | None:
     migration. The new form takes precedence: if the URI parser
     matches it returns the SHA group; otherwise the legacy split
     on the last ``@`` runs as the fallback.
+
+    The PENDING placeholder is the sentinel the two-pass emitter
+    writes before the post-commit finalize step lands. Returning
+    ``"PENDING"`` here lets the caller dispatch on the sentinel
+    (typically: read current HEAD as the implicit pin so a replay
+    against a freshly committed sample stays defensible until
+    ``scripts/finalize_sandbox_ref.py`` runs).
     """
     if not sandbox_image_ref:
         return None
+    if _PENDING_SANDBOX_RE.match(sandbox_image_ref):
+        return "PENDING"
     m = _REPO_URI_RE.match(sandbox_image_ref)
     if m:
         return m.group("sha") or None
@@ -188,7 +202,7 @@ def _parse_sandbox_sha(sandbox_image_ref: str) -> str | None:
         return None
     sha = sandbox_image_ref.rsplit("@", 1)[1].strip()
     # Strip a trailing slash that a repo:// URI without a strict
-    # match (e.g. the PENDING placeholder) might leave behind.
+    # match might leave behind.
     sha = sha.rstrip("/")
     return sha or None
 
@@ -246,7 +260,16 @@ def _load_event_ledger(run_id: str) -> list[dict[str, Any]]:
 
 
 def _enforce_head(recorded_sha: str | None, current_sha: str | None) -> None:
-    """Exit 1 with a checkout hint when HEAD does not match the recorded SHA."""
+    """Exit 1 with a checkout hint when HEAD does not match the recorded SHA.
+
+    The PENDING sentinel marks a sample emitted by the two-pass
+    pattern (DEC-EVL-009) whose post-commit finalize step has not
+    yet rewritten the placeholder to a real SHA. Replay treats
+    PENDING as "current HEAD is the implicit pin" so the operator
+    can replay a freshly regenerated sample without having to run
+    ``scripts/finalize_sandbox_ref.py`` first. Once finalize lands
+    the recorded SHA the strict equality branch fires as usual.
+    """
     if not recorded_sha:
         raise SystemExit(
             "replay_run: Run record's sandbox_image_ref does not carry a "
@@ -259,6 +282,11 @@ def _enforce_head(recorded_sha: str | None, current_sha: str | None) -> None:
             "`git rev-parse HEAD`. Run replay from within the repo's "
             "working tree."
         )
+    if recorded_sha == "PENDING":
+        # The sample carries the PENDING placeholder; treat the
+        # current HEAD as the implicit pin per the two-pass
+        # emission contract from DEC-EVL-009.
+        return
     if current_sha != recorded_sha:
         raise SystemExit(
             "replay_run: HEAD mismatch.\n"

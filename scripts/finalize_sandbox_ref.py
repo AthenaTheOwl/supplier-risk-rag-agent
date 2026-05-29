@@ -1,13 +1,15 @@
 """Rewrite the PENDING sandbox SHA token on a recorded Run record.
 
-The eval-suite runner emits ``Run.sandbox_image_ref`` as
-``repo://supplier-risk-rag-agent@PENDING/`` because the runner cannot
-know the SHA of the commit that will ultimately contain the Run
-record on disk. This script closes the loop: pass ``--run-id`` and
-optionally ``--sha``, the script reads the recorded Run record JSON,
-swaps the ``PENDING`` token for the resolved SHA, and writes the
-file back in place. When ``--sha`` is omitted the script reads
-``git rev-parse HEAD`` against the repo root.
+The eval-suite runner emits ``Run.sandbox_image_ref`` and
+``Run.inputs[].ref`` with the ``PENDING`` placeholder because the
+runner cannot know the SHA of the commit that will ultimately
+contain the Run record on disk. This script closes the loop:
+pass ``--run-id`` and optionally ``--sha``, the script reads the
+recorded Run record JSON, swaps every ``PENDING`` token (one in
+the sandbox ref, one per ``inputs[].ref`` URI) for the resolved
+SHA, and writes the file back in place. When ``--sha`` is
+omitted the script reads ``git rev-parse HEAD`` against the repo
+root.
 
 This script exists to fix the systemic off-by-one bug Round 5
 agents independently caught: a single-pass emitter that records
@@ -47,6 +49,12 @@ RUN_RECORDS_ENV = "SUPPLIER_RISK_RAG_RUN_RECORDS_DIR"
 
 _SANDBOX_RE = re.compile(
     r"^repo://(?P<repo>[a-z][a-z0-9-]*)@(?P<sha>[A-Za-z0-9]+)/$"
+)
+# Matches any repo:// URI carrying a PENDING placeholder for the
+# SHA segment. Used to rewrite every input ref alongside the
+# top-level sandbox_image_ref.
+_PENDING_URI_RE = re.compile(
+    r"^repo://(?P<repo>[a-z][a-z0-9-]*)@PENDING/(?P<path>.*)$"
 )
 
 
@@ -140,6 +148,26 @@ def finalize(
         return 1
 
     record["sandbox_image_ref"] = f"repo://{REPO_NAME}@{sha}/"
+
+    # Rewrite every PENDING-bearing repo:// ref in inputs[] so the
+    # input refs pin the same commit as the sandbox ref. Outputs
+    # carrying an artifact:// URI are left untouched (logical ids
+    # do not carry a SHA).
+    inputs = record.get("inputs")
+    if isinstance(inputs, list):
+        for entry in inputs:
+            if not isinstance(entry, dict):
+                continue
+            ref = entry.get("ref")
+            if not isinstance(ref, str):
+                continue
+            m = _PENDING_URI_RE.match(ref)
+            if not m:
+                continue
+            entry["ref"] = (
+                f"repo://{m.group('repo')}@{sha}/{m.group('path')}"
+            )
+
     # Preserve the existing serialization shape (sorted keys, 2-space
     # indent, trailing newline) so the rewritten file diffs cleanly
     # against the emitter's output.
