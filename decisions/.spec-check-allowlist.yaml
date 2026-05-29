@@ -87,6 +87,20 @@ deferred:
   - id: R-EVL-023
     note: covered collectively by DEC-EVL-009-supplier-risk-rag-agent-portable-repo-uri-migration
 
+  # Round-7 Phase 2 of the run-evidence rollout. R-EVL-024 is
+  # resolved by DEC-EVL-010 directly via the front-matter
+  # `requirement:` field. R-EVL-025..R-EVL-027 are resolved
+  # collectively by the same DEC; the DEC's `## coverage` section
+  # enumerates them. Round-7 Phase 2 amends DEC-EVL-009 by landing
+  # the CI workflow that enforces the run-evidence gate chain on
+  # every PR and every push to main per athena-site DEC-CDCP-015.
+  - id: R-EVL-025
+    note: covered collectively by DEC-EVL-010-supplier-risk-rag-agent-ci-enforces-run-evidence-chain
+  - id: R-EVL-026
+    note: covered collectively by DEC-EVL-010-supplier-risk-rag-agent-ci-enforces-run-evidence-chain
+  - id: R-EVL-027
+    note: covered collectively by DEC-EVL-010-supplier-risk-rag-agent-ci-enforces-run-evidence-chain
+
   # Deploy + secrets (spec 0005). R-DEP-001..R-DEP-003 are all
   # resolved by DEC-DEP-001..DEC-DEP-003 respectively. No deferred
   # entries remain for spec 0005.

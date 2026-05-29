@@ -393,3 +393,85 @@ Acceptance:
   rewriting with a different SHA requires `--force`.
 - After finalize, the recorded SHA matches the
   data-containing commit, not its parent.
+
+### R-EVL-024: CI workflow exists and triggers correctly
+
+WHEN a contributor opens a pull request against `main` or pushes
+directly to `main`, THE SYSTEM SHALL run the
+`.github/workflows/run-evidence-gates.yml` workflow on an
+`ubuntu-latest` runner under Python 3.11 and SHALL run, in a
+single `universal-gates` job, the contract gates that depend only
+on this repo's working tree: schema-cache-freshness, voice-lint,
+bom-check, spec-check, decisions-validation, the four sibling
+typed-artifact validators (roles, tools, policies, skills, dreams),
+typed-event-payload-validation, and pytest under uv.
+
+Acceptance:
+- The workflow file at
+  `.github/workflows/run-evidence-gates.yml` parses as valid YAML.
+- The workflow's `on:` trigger names `pull_request` (no branch
+  filter) and `push: branches: [main]`.
+- The `universal-gates` job sets `runs-on: ubuntu-latest` and
+  `python-version: "3.11"`.
+- The `universal-gates` job calls every script named above as a
+  named step.
+- A clean checkout passes every step on a green run.
+
+### R-EVL-025: CI workflow gates packet generation and validation
+
+WHEN the `run-evidence-gates.yml` workflow runs, THE SYSTEM SHALL
+carry a `packet-and-replay` job that checks out the sibling
+consumer repo at a sibling path under the workspace, pip-installs
+it as editable, runs `python -m trace_to_eval evidence
+from-cdcp-events ops/event-ledger/run-643dff8f3b9c.jsonl --out
+/tmp/packet.json --portfolio-root <workspace>`, then runs
+`python -m trace_to_eval evidence validate /tmp/packet.json`.
+
+Acceptance:
+- The `packet-and-replay` job carries two `actions/checkout@v4`
+  steps: one for this repo and one for the sibling consumer repo.
+- The packet-generation step exits 0 against the canonical sample.
+- The packet-validation step exits 0 against the generated packet.
+- The `--portfolio-root` flag points at the workspace root so the
+  sibling consumer's `repo://` URI resolver maps producer refs to
+  local files inside the runner's workspace.
+
+### R-EVL-026: CI workflow replay smoke checks out recorded sandbox SHA
+
+WHEN the `run-evidence-gates.yml` workflow's `packet-and-replay`
+job reaches the replay-smoke step, THE SYSTEM SHALL extract the
+recorded sandbox SHA from `Run.sandbox_image_ref` via `jq` + a
+sed regex matching `^repo://[^@]+@([a-f0-9]{40})/.*`, run
+`git checkout <sandbox-sha>` against a full-history clone
+(`fetch-depth: 0`), and run
+`python scripts/replay_run.py --run-id run-643dff8f3b9c`.
+
+Acceptance:
+- The repo checkout step sets `fetch-depth: 0` so the recorded
+  SHA is reachable in the runner.
+- The sandbox-SHA extraction step fails (exit 1) with a clear
+  diagnostic when `sandbox_image_ref` does not match the
+  `repo://` URI grammar with a 40-char SHA.
+- The replay step exits 0 only when `replay_equivalent: true`
+  on all three signals (`prompt_snapshot_hash`,
+  `tool_schemas_snapshot_hash`, `gate_results_summary`).
+- A mutated canonical sample (e.g. a swapped
+  `gate_results_summary`) trips the replay step's divergence
+  branch and turns the job red.
+
+### R-EVL-027: no contract gate is non-blocking
+
+WHEN any step of the `run-evidence-gates.yml` workflow runs, THE
+SYSTEM SHALL ensure no contract gate carries `continue-on-error:
+true` and no step bypasses pre-commit hooks via `--no-verify` or
+equivalent. Every gate listed in athena-site DEC-CDCP-015 blocks
+the merge.
+
+Acceptance:
+- A grep for `continue-on-error: true` against
+  `.github/workflows/run-evidence-gates.yml` returns no matches.
+- A grep for `--no-verify` against the same file returns no
+  matches.
+- A red gate (e.g. a failed pytest assertion) turns the job red
+  and blocks the merge per GitHub's default branch-protection
+  contract.
