@@ -1,0 +1,159 @@
+name: run-evidence-gates
+
+# DEC-EVL-010 amends DEC-EVL-009 to land the CI enforcement contract
+# defined in athena-site DEC-CDCP-015. This workflow gates every PR and
+# every push to main on the full run-evidence chain: schema cache
+# freshness, typed event payload validation + Run/Event cross-checks,
+# packet generation from the canonical sample, packet validation, and
+# replay smoke against the recorded sandbox SHA.
+#
+# The packet-generation + packet-validation + replay-smoke gates depend
+# on the sibling consumer repo (checked out alongside this repo and
+# pip-installed). The sibling consumer repo is the one that publishes the
+# v2-1 run-evidence packet schema and ships the resolver that maps
+# repo:// URIs to local files under the portfolio root.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  # Universal gates (1-7 from DEC-CDCP-015): schema cache freshness,
+  # voice lint, BOM check, spec check, decisions validation, typed
+  # event payload validation + Run/Event cross-checks, language tests.
+  universal-gates:
+    name: universal contract gates
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout repo
+        uses: actions/checkout@v4
+
+      - name: setup python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: install gate dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install pyyaml jsonschema
+
+      - name: schema-cache-freshness
+        run: python scripts/check_schema_cache_freshness.py
+
+      - name: voice-lint
+        run: python scripts/voice_lint.py
+
+      - name: bom-check
+        run: python scripts/check_no_bom.py
+
+      - name: spec-check
+        run: python scripts/spec_check.py
+
+      - name: decisions-validation
+        run: python scripts/validate_decisions.py
+
+      - name: roles-validation
+        run: python scripts/validate_roles.py
+
+      - name: tools-validation
+        run: python scripts/validate_tools.py
+
+      - name: policies-validation
+        run: python scripts/validate_policies.py
+
+      - name: skills-validation
+        run: python scripts/validate_skills.py
+
+      - name: dreams-validation
+        run: python scripts/validate_dreams.py
+
+      - name: typed-event-payload-validation
+        run: python scripts/validate_run_evidence.py
+
+      - name: install project for pytest
+        uses: astral-sh/setup-uv@v5
+
+      - name: sync dev deps
+        run: uv sync --group dev
+
+      - name: language-test-runner
+        run: uv run pytest --cov=src --cov-fail-under=70
+
+  # Product-side gates (8-10 from DEC-CDCP-015): packet generation
+  # from the canonical sample, packet validation, and replay smoke
+  # against the recorded sandbox SHA. The packet-gen + packet-validate
+  # steps depend on the sibling consumer repo (checked out at
+  # ../trace-to-eval-harness relative to this repo); replay smoke runs
+  # entirely inside this repo against the recorded SHA.
+  packet-and-replay:
+    name: packet generation + validation + replay smoke
+    runs-on: ubuntu-latest
+    env:
+      CANONICAL_SAMPLE: run-643dff8f3b9c
+    steps:
+      - name: checkout this repo (full history for replay checkout)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          path: supplier-risk-rag-agent
+
+      - name: checkout sibling consumer repo
+        uses: actions/checkout@v4
+        with:
+          repository: AthenaTheOwl/trace-to-eval-harness
+          path: trace-to-eval-harness
+
+      - name: setup python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: install sibling consumer repo as editable
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ./trace-to-eval-harness
+          python -m pip install pyyaml jsonschema
+
+      - name: packet-generation-from-canonical-sample
+        working-directory: supplier-risk-rag-agent
+        run: |
+          python -m trace_to_eval evidence from-cdcp-events \
+            ops/event-ledger/${CANONICAL_SAMPLE}.jsonl \
+            --out /tmp/packet.json \
+            --portfolio-root ${{ github.workspace }}
+
+      - name: packet-validation
+        working-directory: supplier-risk-rag-agent
+        run: python -m trace_to_eval evidence validate /tmp/packet.json
+
+      - name: install project for replay smoke
+        uses: astral-sh/setup-uv@v5
+
+      - name: sync dev deps for replay
+        working-directory: supplier-risk-rag-agent
+        run: uv sync --group dev
+
+      - name: extract sandbox SHA from canonical sample Run record
+        id: sandbox
+        working-directory: supplier-risk-rag-agent
+        run: |
+          SANDBOX_URI=$(jq -r .sandbox_image_ref ops/run-records/${CANONICAL_SAMPLE}.json)
+          SANDBOX_SHA=$(echo "$SANDBOX_URI" | sed -E 's|^repo://[^@]+@([a-f0-9]{40})/.*|\1|')
+          if [ -z "$SANDBOX_SHA" ] || [ "$SANDBOX_SHA" = "$SANDBOX_URI" ]; then
+            echo "::error title=Could not extract sandbox SHA::sandbox_image_ref did not match the repo:// URI grammar with a 40-char SHA. Got: $SANDBOX_URI"
+            exit 1
+          fi
+          echo "sandbox_sha=$SANDBOX_SHA" >> "$GITHUB_OUTPUT"
+          echo "extracted sandbox SHA: $SANDBOX_SHA"
+
+      - name: checkout recorded sandbox SHA
+        working-directory: supplier-risk-rag-agent
+        run: git checkout ${{ steps.sandbox.outputs.sandbox_sha }}
+
+      - name: replay-smoke
+        working-directory: supplier-risk-rag-agent
+        run: uv run python scripts/replay_run.py --run-id ${CANONICAL_SAMPLE}
