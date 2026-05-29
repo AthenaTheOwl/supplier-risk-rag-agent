@@ -1,3 +1,10 @@
+"""EDGAR refresh tests.
+
+DEC requirements exercised: R-ING-001 (EDGAR refresh writes generated
+corpus artifacts under data/), R-EVL-031 (the refresh harness backs
+the three-CIK adversarial sample-corpus refresh script).
+"""
+
 from __future__ import annotations
 
 import asyncio
@@ -60,6 +67,10 @@ def test_select_recent_filings_filters_targets_and_caps_results() -> None:
 def test_refresh_edgar_corpus_replaces_generated_jsonl_and_manifest(
     tmp_path: Path,
 ) -> None:
+    """Refresh writes a generated chunks.jsonl plus a refresh manifest.
+
+    Covers: R-ING-001.
+    """
     manifest = IngestManifest.model_validate(
         {
             "ciks": [{"cik": "320193", "name": "Apple Inc.", "ticker": "AAPL"}],
@@ -114,6 +125,11 @@ def test_refresh_edgar_corpus_replaces_generated_jsonl_and_manifest(
 def test_refresh_edgar_corpus_dry_run_skips_documents_and_writes(
     tmp_path: Path,
 ) -> None:
+    """Dry-run skips fetches and writes; same harness the three-CIK
+    adversarial refresh script drives in scripts/refresh_sample_corpus.py.
+
+    Covers: R-EVL-031.
+    """
     manifest = IngestManifest.model_validate(
         {
             "ciks": [{"cik": "320193", "name": "Apple Inc."}],

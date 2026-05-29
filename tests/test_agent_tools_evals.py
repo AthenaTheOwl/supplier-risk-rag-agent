@@ -49,6 +49,13 @@ def test_live_answer_branch_uses_supplied_client() -> None:
 
 
 def test_eval_modules_return_passing_metrics() -> None:
+    """Run the four eval suites (retrieval, citations, regression,
+    abstention) under the deterministic, no-vendor-keys path and
+    assert each suite hits its threshold. Exercises the four-suite
+    eval gate without any LLM call.
+
+    Covers: R-EVL-001, R-EVL-002, R-EVL-003.
+    """
     ranker = HybridRanker(load_sample_corpus())
     agent = SupplierRiskAgent(ranker)
     retrieval = evaluate_retrieval(

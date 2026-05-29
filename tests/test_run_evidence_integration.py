@@ -5,6 +5,12 @@ checked-in sample corpus, redirect the ledger and record dirs into
 ``tmp_path`` via env vars, and verify the produced artifacts pass the
 validator. Unit tests for the emitter helpers live in
 ``tests/test_run_evidence.py``.
+
+DEC requirements exercised: R-EVL-005 (eval results land in a ledger
+under ops/), R-EVL-006 (runner emits conformant Event ledger),
+R-EVL-007 (runner emits conformant Run record per suite), R-EVL-011
+(validate_run_evidence.py runs on every push to main and exits
+non-zero on schema violations).
 """
 
 from __future__ import annotations
@@ -42,6 +48,10 @@ def _run_suite(tmp_path: Path, suite: str) -> tuple[Path, Path]:
 
 
 def test_runner_emits_record_and_ledger_for_one_suite(tmp_path: Path) -> None:
+    """One suite execution -> one JSONL ledger + one Run record JSON.
+
+    Covers: R-EVL-006, R-EVL-007.
+    """
     ledger_dir, records_dir = _run_suite(tmp_path, "refusal_cases")
 
     ledger_files = sorted(ledger_dir.glob("*.jsonl"))
@@ -97,7 +107,10 @@ def test_runner_no_emit_evidence_skips_emission(tmp_path: Path) -> None:
 
 
 def test_validate_run_evidence_accepts_runner_output(tmp_path: Path) -> None:
-    """The validator script accepts the runner's output as conformant."""
+    """The validator script accepts the runner's output as conformant.
+
+    Covers: R-EVL-011.
+    """
     ledger_dir, records_dir = _run_suite(tmp_path, "refusal_cases")
 
     synthetic_root = tmp_path / "synth"

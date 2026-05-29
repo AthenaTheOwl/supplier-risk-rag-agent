@@ -1,5 +1,15 @@
 """Chaos test suite for ``scripts/validate_run_evidence.py``.
 
+DEC requirements exercised: R-EVL-034 (this module ships the seven
+M1..M7 mutation tests over the canonical sample under tmp_path with
+a baseline test and a suite-level guard asserting every expected
+mutation test name is present), R-EVL-035 (the seven mutation
+classes cover the validator's three enforcement layers: hash-equality
+cross-checks, the gate-rollup cross-check, the required terminal
+gate.run.evidence_recorded event on done Runs, the typed-event-payload
+validation via the oneOf discriminator, the fields_populated
+cross-check, and the required-for-done block).
+
 The validator carries three layers of enforcement against an emitted
 Run record + event ledger pair: typed event payload validation via the
 ``oneOf`` discriminator in the cached ``event.schema.json``, four

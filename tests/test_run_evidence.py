@@ -4,6 +4,19 @@ The unit tests cover the emitter helpers in isolation. The integration
 test drives ``src/evals/runner.py`` end-to-end against the checked-in
 sample corpus and verifies that one suite execution produces one Run
 record plus a matching JSONL ledger that the validator accepts.
+
+DEC requirements exercised in this module: R-EVL-008 (prompt and
+tool-schemas hashes always populated), R-EVL-009 (sandbox_image_ref
+populated from repo HEAD), R-EVL-010 (gate_results_summary aggregated
+from gate.check.* events), R-EVL-012 (done Runs populate the four
+required-for-done fields), R-EVL-013 (done Runs carry a terminal
+gate.run.evidence_recorded event), R-EVL-014 (Run-vs-pipeline.start
+hash cross-checks plus the fields_populated cross-check), R-EVL-015
+(gate_results_summary matches the ledger rollup), R-EVL-020 (portable
+repo:// URIs in sandbox_image_ref and inputs[].ref), R-EVL-021
+(resolve_uri helper handles repo://, artifact://, and legacy paths),
+R-EVL-023 (the emitter writes the PENDING placeholder for the sandbox
+SHA at emit-time so finalize_sandbox_ref.py can rewrite it).
 """
 
 from __future__ import annotations
@@ -176,6 +189,12 @@ def test_emit_event_rejects_invalid_event(tmp_path: Path) -> None:
 
 
 def test_emit_run_writes_valid_record_with_replay_fields(tmp_path: Path) -> None:
+    """A complete Run record carries the portable repo:// URIs on
+    sandbox_image_ref and inputs[].ref plus the bare repo identity
+    token on workspace_id.
+
+    Covers: R-EVL-020.
+    """
     record_path = tmp_path / "run-xyz.json"
     run = {
         "id": "run-xyz",
@@ -236,6 +255,11 @@ def test_aggregate_gate_results_returns_none_when_no_gate_events() -> None:
 
 
 def test_aggregate_gate_results_splits_pass_and_fail() -> None:
+    """Aggregator splits passed and failed gates by event type; this
+    rollup is what gate_results_summary on the Run record records.
+
+    Covers: R-EVL-010, R-EVL-015.
+    """
     passed = make_event(
         event_type="gate.check.passed",
         actor_kind="system",
@@ -276,6 +300,11 @@ def test_aggregate_gate_results_all_passed_when_no_failures() -> None:
 
 
 def test_build_run_evidence_fields_populates_two_hashes_minimum() -> None:
+    """The emitter always populates prompt_snapshot_hash and
+    tool_schemas_snapshot_hash on every Run record.
+
+    Covers: R-EVL-008.
+    """
     result = build_run_evidence_fields(
         extraction_prompt="plan",
         answer_prompt="answer",
@@ -373,6 +402,8 @@ def test_derive_sandbox_image_ref_defaults_to_pending_token(
     The two-pass emission pattern (the runner emits PENDING and a
     post-commit step rewrites the value) means the default path
     must produce the placeholder, not the working-tree HEAD.
+
+    Covers: R-EVL-023.
     """
     repo = tmp_path / "repo"
     repo.mkdir()
@@ -383,6 +414,11 @@ def test_derive_sandbox_image_ref_defaults_to_pending_token(
 def test_derive_sandbox_image_ref_uses_explicit_sha_when_passed(
     tmp_path: Path,
 ) -> None:
+    """An explicit SHA (e.g. the repo HEAD passed by the runner) is
+    rendered into sandbox_image_ref via the portable repo:// grammar.
+
+    Covers: R-EVL-009.
+    """
     repo = tmp_path / "repo"
     repo.mkdir()
     sha = "a" * 40
@@ -394,6 +430,11 @@ def test_derive_sandbox_image_ref_uses_explicit_sha_when_passed(
 
 
 def test_repo_uri_default_sha_is_pending() -> None:
+    """repo_uri() emits the portable repo://<repo>@<sha>/<path> grammar
+    with the PENDING placeholder when no SHA is passed.
+
+    Covers: R-EVL-020.
+    """
     uri = repo_uri("eval_suites/refusal_cases.yaml")
     assert uri == (
         f"repo://{REPO_NAME}@{PENDING_SHA_TOKEN}/"
@@ -453,6 +494,11 @@ def _load_resolve_uri() -> object:
 
 
 def test_resolve_uri_repo_form_to_local_path(tmp_path: Path) -> None:
+    """The validator's resolve_uri helper maps a repo:// URI to a
+    local path under the portfolio root.
+
+    Covers: R-EVL-021.
+    """
     resolve_uri = _load_resolve_uri()
     portfolio = tmp_path / "random-apps"
     uri = (
@@ -704,6 +750,11 @@ def test_validator_passes_on_well_formed_pair(tmp_path: Path) -> None:
 
 
 def test_validator_fails_when_done_missing_required_field(tmp_path: Path) -> None:
+    """A done Run missing one of the four required-for-done fields
+    (here: sandbox_image_ref) trips the validator.
+
+    Covers: R-EVL-012.
+    """
     _seed_schemas_cache(tmp_path)
     events, run = _well_formed_pair("run-negative001")
     # Drop sandbox_image_ref on a done Run.
@@ -726,6 +777,11 @@ def test_validator_fails_when_done_missing_required_field(tmp_path: Path) -> Non
 
 
 def test_validator_fails_on_prompt_hash_mismatch(tmp_path: Path) -> None:
+    """Cross-check 1: Run.prompt_snapshot_hash must equal the
+    pipeline.start event payload's hash.
+
+    Covers: R-EVL-014.
+    """
     _seed_schemas_cache(tmp_path)
     events, run = _well_formed_pair("run-negative002")
     run["prompt_snapshot_hash"] = compute_sha256("a-different-prompt")
@@ -736,6 +792,11 @@ def test_validator_fails_on_prompt_hash_mismatch(tmp_path: Path) -> None:
 
 
 def test_validator_fails_on_tool_schemas_hash_mismatch(tmp_path: Path) -> None:
+    """Cross-check 2: Run.tool_schemas_snapshot_hash must equal the
+    pipeline.start event payload's tool_schemas_snapshot_hash.
+
+    Covers: R-EVL-014.
+    """
     _seed_schemas_cache(tmp_path)
     events, run = _well_formed_pair("run-negative003")
     run["tool_schemas_snapshot_hash"] = compute_sha256("a-different-toolset")
@@ -746,6 +807,11 @@ def test_validator_fails_on_tool_schemas_hash_mismatch(tmp_path: Path) -> None:
 
 
 def test_validator_fails_on_fields_populated_mismatch(tmp_path: Path) -> None:
+    """Cross-check 3: gate.run.evidence_recorded.fields_populated must
+    match the actually-populated replay-equivalence fields on the Run.
+
+    Covers: R-EVL-014.
+    """
     _seed_schemas_cache(tmp_path)
     events, run = _well_formed_pair("run-negative004")
     # Drop determinism + claim it in the evidence payload.
@@ -765,6 +831,11 @@ def test_validator_fails_on_fields_populated_mismatch(tmp_path: Path) -> None:
 
 
 def test_validator_fails_on_gate_summary_mismatch(tmp_path: Path) -> None:
+    """Cross-check 4: Run.gate_results_summary must match the rollup of
+    gate.check.* event names in the ledger.
+
+    Covers: R-EVL-015.
+    """
     _seed_schemas_cache(tmp_path)
     events, run = _well_formed_pair("run-negative005")
     # Run says one gate passed; ledger event-stream is empty of
@@ -777,6 +848,11 @@ def test_validator_fails_on_gate_summary_mismatch(tmp_path: Path) -> None:
 
 
 def test_validator_fails_when_done_missing_evidence_event(tmp_path: Path) -> None:
+    """A done Run with no terminal gate.run.evidence_recorded event in
+    its ledger trips the required-event check.
+
+    Covers: R-EVL-013.
+    """
     _seed_schemas_cache(tmp_path)
     events, run = _well_formed_pair("run-negative006")
     events = [e for e in events if e["type"] != "gate.run.evidence_recorded"]

@@ -1,5 +1,13 @@
 """Replay determinism test fixture for the canonical sample.
 
+DEC requirements exercised: R-EVL-028 (the determinism fixture
+re-runs replay_run.py RERUNS times against the canonical sample at
+the recorded sandbox SHA and asserts every replay produced the same
+canonicalized hash, writing a failure bundle on divergence and
+restoring the saved HEAD on teardown), R-EVL-029 (the per-replay
+ledger filename carries microsecond resolution so the three replays
+inside the same wall-clock second land on three distinct paths).
+
 This test installs the ChatGPT-pulse replay-determinism pattern,
 translated into the run-evidence framing this repo already ships.
 The canonical sample at ``ops/run-records/run-643dff8f3b9c.json``

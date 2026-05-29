@@ -64,7 +64,10 @@ def _corpus_with_match_and_noise() -> list[DocumentChunk]:
 
 
 def test_weights_match_dec_ret_001_sixty_twenty_five_fifteen() -> None:
-    """The combined-score formula must use 0.60 / 0.25 / 0.15 weights."""
+    """The combined-score formula must use 0.60 / 0.25 / 0.15 weights.
+
+    Covers: R-RET-001.
+    """
     chunks = _corpus_with_match_and_noise()
     # The fixed embedder returns the same vector for the query and
     # the matching chunk (cosine = 1.0) and orthogonal vectors for

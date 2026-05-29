@@ -10,6 +10,9 @@ Covers:
 - ordering: rerank reorders candidates by predicted score
 - empty input: returns []
 - graceful fallback when model load fails (returns input top_k unchanged)
+
+DEC requirements exercised: R-RET-004 (opt-in reranker via constructor
+and runner flag), R-RET-006 (cross-encoder reranker shipped opt-in).
 """
 
 from __future__ import annotations

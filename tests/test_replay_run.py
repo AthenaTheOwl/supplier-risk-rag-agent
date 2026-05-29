@@ -15,6 +15,16 @@ equivalent. Three negative paths drive the documented failure modes:
   no longer matches what the fresh re-run computes.
 - Rubric drift: mutate ``gate_results_summary`` so the recorded
   rollup no longer matches what the fresh re-run computes.
+
+DEC requirements exercised: R-EVL-016 (replay_run.py is the canonical
+replay command and exits 1 with a diagnostic when files are missing),
+R-EVL-017 (HEAD-strict pre-flight against the recorded sandbox SHA),
+R-EVL-018 (compares the three replay-equivalence signals and exits 1
+on any divergence), R-EVL-019 (emits a run.evidence.replayed event
+plus a detailed comparison report and leaves the source artifacts
+untouched), R-EVL-022 (replay parses the recorded SHA out of the
+new repo:// URI shape and treats the PENDING placeholder as the
+implicit current-HEAD pin).
 """
 
 from __future__ import annotations
@@ -176,6 +186,8 @@ def test_replay_equivalent_against_freshly_generated_sample(tmp_path: Path) -> N
     exit zero, and must write a ``run.evidence.replayed`` event into
     a per-replay ledger plus a detailed comparison report under
     ``ops/replay-records/<run-id>/``.
+
+    Covers: R-EVL-019.
     """
     head = _git_head_sha()
     records_dir, ledger_dir, replay_dir = _redirected_layout(tmp_path)
@@ -232,6 +244,8 @@ def test_replay_treats_pending_sandbox_ref_as_implicit_head(
     the SHA. Replay must tolerate the placeholder so an operator
     can verify a freshly regenerated sample against the same
     commit without an intervening finalize step.
+
+    Covers: R-EVL-022.
     """
     records_dir, ledger_dir, replay_dir = _redirected_layout(tmp_path)
     env = _redirected_env(records_dir, ledger_dir, replay_dir)
@@ -254,7 +268,10 @@ def test_replay_treats_pending_sandbox_ref_as_implicit_head(
 def test_replay_head_mismatch_exits_one_with_checkout_hint(
     tmp_path: Path,
 ) -> None:
-    """HEAD != recorded sandbox SHA exits 1 with a ``git checkout`` hint."""
+    """HEAD != recorded sandbox SHA exits 1 with a ``git checkout`` hint.
+
+    Covers: R-EVL-017.
+    """
     records_dir, ledger_dir, replay_dir = _redirected_layout(tmp_path)
     env = _redirected_env(records_dir, ledger_dir, replay_dir)
     run_id, record_path, _ = _generate_sample(env)
@@ -280,7 +297,10 @@ def test_replay_head_mismatch_exits_one_with_checkout_hint(
 
 
 def test_replay_missing_run_record_exits_one(tmp_path: Path) -> None:
-    """A run_id with no Run record file exits 1 with a clear message."""
+    """A run_id with no Run record file exits 1 with a clear message.
+
+    Covers: R-EVL-016.
+    """
     records_dir, ledger_dir, replay_dir = _redirected_layout(tmp_path)
     env = _redirected_env(records_dir, ledger_dir, replay_dir)
     result = _invoke_replay("run-doesnotexist", env)
@@ -297,6 +317,8 @@ def test_replay_detects_prompt_drift(tmp_path: Path) -> None:
     re-run computes means the comparison must report divergence and
     exit 1, naming the diverging signal in the printed summary plus
     in the written report.
+
+    Covers: R-EVL-018.
     """
     head = _git_head_sha()
     records_dir, ledger_dir, replay_dir = _redirected_layout(tmp_path)
@@ -333,6 +355,8 @@ def test_replay_detects_gate_rollup_drift(tmp_path: Path) -> None:
     means the fresh re-run's rollup (still a pass) no longer matches.
     The script must report the divergence and exit 1, calling out
     the gate-rollup signal specifically.
+
+    Covers: R-EVL-018.
     """
     head = _git_head_sha()
     records_dir, ledger_dir, replay_dir = _redirected_layout(tmp_path)

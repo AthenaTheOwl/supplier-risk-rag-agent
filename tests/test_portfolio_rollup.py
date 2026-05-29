@@ -25,6 +25,10 @@ def test_parse_holdings_requires_all_or_no_weights() -> None:
 
 
 def test_rollup_groups_supported_cards_with_verified_citations() -> None:
+    """Deterministic investor rollup over verified evidence.
+
+    Covers: R-CIT-004.
+    """
     ranker = HybridRanker(load_sample_corpus())
     holdings = parse_holdings("AAPL 25\nNVDA 35\nTSM 40")
     rollup = build_portfolio_rollup(holdings, ranker)
