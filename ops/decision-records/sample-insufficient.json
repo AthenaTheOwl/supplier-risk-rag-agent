@@ -1,0 +1,11 @@
+{
+  "id": "22222222-3333-4444-8555-666666666666",
+  "query": "Is supplier ASE Technology a tier-1 advanced-packaging dependency for our SoC roadmap?",
+  "status": "insufficient_evidence",
+  "rule_id": "tier1-evidence-bar",
+  "evidence_pointers": [],
+  "confidence": 0.31,
+  "produced_at": "2026-06-05T18:05:00Z",
+  "model": "anthropic:claude-sonnet-4-6",
+  "notes": "Retrieval surfaced 3 ASE filings but none named advanced-packaging exclusivity; raise the bar to require an explicit supplier-concentration disclosure before promoting to tier-1."
+}

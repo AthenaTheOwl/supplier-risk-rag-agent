@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://supplier-risk-rag-agent.dev/schemas/decision-record.schema.json",
+  "title": "DecisionRecord",
+  "description": "Typed artifact produced by the supplier-risk agent for one decision-augmented query. Closes the user-flagged decision-augmented-RAG gap with a recoverable artifact: every query that asks 'what should I do about supplier X?' produces one of these, signed by evidence pointers + a rule id.",
+  "type": "object",
+  "required": ["id", "query", "status", "rule_id", "evidence_pointers", "confidence", "produced_at"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "UUIDv4 of the decision record; unique per produced artifact.",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+    },
+    "query": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1000,
+      "description": "The natural-language decision query the agent answered."
+    },
+    "status": {
+      "type": "string",
+      "enum": ["supported", "insufficient_evidence", "refused"],
+      "description": "supported: evidence backed the decision. insufficient_evidence: retrieval succeeded but evidence didn't pass the supporting-claim test. refused: the agent declined to decide (e.g. out-of-scope query, refusal rule triggered)."
+    },
+    "rule_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Identifier of the decision rule that produced this verdict. The rule registry is in src/agent/decision_rules.py."
+    },
+    "evidence_pointers": {
+      "type": "array",
+      "description": "Verbatim citations that support the verdict. Empty array is required when status != supported; non-empty when status == supported.",
+      "items": {
+        "type": "object",
+        "required": ["chunk_id", "accession", "cik", "section", "span_text"],
+        "properties": {
+          "chunk_id": { "type": "string", "minLength": 1 },
+          "accession": { "type": "string", "minLength": 1 },
+          "cik": { "type": "string", "pattern": "^[0-9]{1,10}$" },
+          "section": { "type": "string" },
+          "span_text": { "type": "string", "minLength": 1, "description": "The exact substring verified verbatim against the source chunk." },
+          "span_offsets": {
+            "type": "array",
+            "items": { "type": "integer", "minimum": 0 },
+            "minItems": 2,
+            "maxItems": 2,
+            "description": "[start, end) byte offsets within the source chunk."
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "confidence": {
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": 1.0,
+      "description": "Agent-side confidence in the verdict. Calibration is a follow-up — for v1 this is the rule's own confidence score."
+    },
+    "produced_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "RFC 3339 timestamp the decision was recorded."
+    },
+    "model": {
+      "type": "string",
+      "description": "LLM provider:model the agent ran on (optional for rule-only decisions)."
+    },
+    "notes": {
+      "type": "string",
+      "description": "Optional free-text note for the reviewer."
+    }
+  },
+  "additionalProperties": false
+}
