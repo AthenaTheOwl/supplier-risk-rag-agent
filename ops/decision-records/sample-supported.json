@@ -1,0 +1,20 @@
+{
+  "id": "11111111-2222-4333-8444-555555555555",
+  "query": "Should we add NVIDIA as a tier-1 supplier for 2026 H2?",
+  "status": "supported",
+  "rule_id": "tier1-evidence-bar",
+  "evidence_pointers": [
+    {
+      "chunk_id": "nvda-10k-2024-supplier-concentration",
+      "accession": "0001045810-24-000316",
+      "cik": "1045810",
+      "section": "Item 1A. Risk Factors",
+      "span_text": "Substantially all of our products are manufactured at third-party foundries and assembly partners.",
+      "span_offsets": [128, 232]
+    }
+  ],
+  "confidence": 0.82,
+  "produced_at": "2026-06-05T18:00:00Z",
+  "model": "anthropic:claude-sonnet-4-6",
+  "notes": "Tier-1 status pending diversification of foundry sourcing."
+}
