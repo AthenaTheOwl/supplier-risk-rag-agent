@@ -205,6 +205,26 @@ python scripts/validate_policies.py
 27 tests at 85% coverage. Four eval suites run against the
 in-memory sample corpus with no vendor keys required.
 
+## live demo
+
+Deploy with Streamlit Cloud using:
+
+```text
+streamlit_app.py
+```
+
+Local run:
+
+```powershell
+python -m uv run streamlit run streamlit_app.py
+```
+
+## connects to
+
+- `chip-supply-chain-map` for graph-level supply-chain exposure.
+- `LLM-evaluation-framework` for reusable eval patterns.
+- `ai-supply-chain-copilot-prd` for the exception-workbench product wrapper.
+
 ## stack
 
 Python 3.11 - Anthropic SDK - OpenAI SDK - Chroma (local-only) -
