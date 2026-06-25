@@ -1,7 +1,10 @@
 """Streamlit Cloud entrypoint.
 
-The hosted app lives in app.py. This wrapper gives Streamlit Cloud a stable
-entrypoint without changing the local app path.
+The hosted app lives in app.py. Its UI is built inside app.main() guarded by
+`if __name__ == "__main__"`, so a bare `import app` runs nothing and the page
+renders blank. Call main() explicitly so the app renders under any entrypoint.
 """
 
-import app  # noqa: F401
+from app import main
+
+main()
