@@ -27,7 +27,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -97,13 +97,13 @@ jobs:
       CANONICAL_SAMPLE: run-643dff8f3b9c
     steps:
       - name: checkout this repo (full history for replay checkout)
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
           path: supplier-risk-rag-agent
 
       - name: checkout sibling consumer repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: AthenaTheOwl/trace-to-eval-harness
           path: trace-to-eval-harness
@@ -174,7 +174,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: setup uv
         uses: astral-sh/setup-uv@v5
@@ -197,7 +197,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: checkout repo (full history for sandbox-SHA checkout)
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
