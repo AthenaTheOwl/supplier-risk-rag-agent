@@ -44,6 +44,14 @@ def test_rollup_groups_supported_cards_with_verified_citations() -> None:
     assert supplier.evidence_weight > 0
     assert all(card.citations for card in [supplier, export_control, taiwan])
 
+    # Pin the span the ranker in _select_evidence actually chooses. This anchors the
+    # max(...) ordering on (token_hits, score, -len); flipping it to min or reordering
+    # the key would surface a different sentence and fail here.
+    assert supplier.evidence[0].citation.span_text == (
+        "The excerpt states that a disruption at contract manufacturers or key "
+        "suppliers could reduce availability of iPhone, Mac, and services hardware."
+    )
+
     for card in [supplier, export_control, taiwan]:
         for evidence in card.evidence:
             results = ranker.search(

@@ -39,5 +39,12 @@ class IngestManifest(BaseModel):
 
 
 def load_manifest(path: str | Path) -> IngestManifest:
-    with Path(path).open("r", encoding="utf-8") as handle:
-        return IngestManifest.model_validate(json.load(handle))
+    try:
+        with Path(path).open("r", encoding="utf-8") as handle:
+            data = json.load(handle)
+    except FileNotFoundError as exc:
+        # Wrong --manifest path is the common operator mistake; give the path back.
+        raise SystemExit(f"Manifest not found: {path}") from exc
+    except json.JSONDecodeError as exc:
+        raise SystemExit(f"Manifest is not valid JSON ({path}): {exc}") from exc
+    return IngestManifest.model_validate(data)
