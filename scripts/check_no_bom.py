@@ -4,7 +4,21 @@ import sys
 
 BOM = b"\xef\xbb\xbf"
 SCANNED_EXTS = {".md", ".yaml", ".yml", ".json", ".astro", ".tsx", ".ts", ".js", ".mjs", ".py"}
-SKIP_DIRS = {".git", "node_modules", ".next", "dist", "build", ".turbo", "ops/schemas-cache", ".astro"}
+SKIP_DIRS = {
+    ".git",
+    ".gstack",
+    ".next",
+    ".pytest-basetemp-final",
+    ".pytest_cache",
+    ".turbo",
+    ".venv",
+    ".astro",
+    "__pycache__",
+    "build",
+    "dist",
+    "node_modules",
+    "ops/schemas-cache",
+}
 
 def main() -> int:
     root = pathlib.Path(".").resolve()
