@@ -9,7 +9,7 @@ The deployed app is BYOK. Paste your Anthropic key, and optionally your OpenAI k
 ## What makes this RAG worth reading
 
 - Citation faithfulness is verified after generation. Every cited span must appear verbatim in a retrieved chunk; `src/retrieval/citations.py` raises if it does not.
-- Four eval suites gate every push: retrieval quality, citation faithfulness, supplier-risk questions, and refusal cases.
+- Five eval suites gate every push: retrieval quality, citation faithfulness, supplier-risk questions, refusal cases, and adversarial refusal precision.
 - The default ranker is deterministic: 60% normalized BM25, 25% cosine over local hashing embeddings, and 15% term overlap.
 - Cross-encoder reranking remains opt-in because the sample experiment broke citation faithfulness and was reverted.
 - Anthropic is the default provider and OpenAI is the alternate via `LLM_PROVIDER`. Demo keys flow through an explicit `Keys` object, not environment reads.
@@ -72,7 +72,7 @@ python scripts/validate_tools.py
 python scripts/validate_policies.py
 ```
 
-The four eval suites run against the in-memory sample corpus with no vendor keys required.
+The five eval suites run against the in-memory sample corpus with no vendor keys required.
 
 ## Live demo
 
@@ -95,7 +95,7 @@ The repo runs under the Cognitive Delivery Control Plane. Specs, decisions, agen
 Key records:
 
 - [DEC-CIT-001](decisions/DEC-CIT-001-verbatim-span-verification-post-generation.md) - verbatim span verification.
-- [DEC-EVL-001](decisions/DEC-EVL-001-four-suite-eval-gate-with-thresholds.md) - four-suite eval gate.
+- [DEC-EVL-001](decisions/DEC-EVL-001-four-suite-eval-gate-with-thresholds.md) - original four-suite eval gate; [DEC-EVL-012](decisions/DEC-EVL-012-edgar-refresh-and-adversarial-refusal-suite.md) adds the adversarial refusal precision suite.
 - [DEC-RET-001](decisions/DEC-RET-001-hybrid-bm25-cosine-term-overlap-weighted.md) - deterministic hybrid ranker.
 - [DEC-LLM-002](decisions/DEC-LLM-002-keys-flow-via-explicit-keys-object-no-env-reads.md) - explicit key flow.
 
