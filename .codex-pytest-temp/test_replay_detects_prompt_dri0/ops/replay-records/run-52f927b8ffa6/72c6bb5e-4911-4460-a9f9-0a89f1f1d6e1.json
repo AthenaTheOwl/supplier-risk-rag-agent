@@ -1,0 +1,43 @@
+{
+  "comparison": {
+    "gate_results_summary": {
+      "fresh": {
+        "all_passed": true,
+        "gates_failed": [],
+        "gates_passed": [
+          "refusal_precision_threshold"
+        ]
+      },
+      "match": true,
+      "recorded": {
+        "all_passed": true,
+        "gates_failed": [],
+        "gates_passed": [
+          "refusal_precision_threshold"
+        ]
+      }
+    },
+    "prompt_snapshot_hash": {
+      "fresh": "39c8c12b83a75b82aede7425dc3196c415c20b48c047f0f4cb79c7354f9c441b",
+      "match": false,
+      "recorded": "a9c8c12b83a75b82aede7425dc3196c415c20b48c047f0f4cb79c7354f9c441b"
+    },
+    "replay_equivalent": false,
+    "tool_schemas_snapshot_hash": {
+      "fresh": "e08826891cebceb4cf181a4195bc19558d503a83adf7b7c73cd7a6d43fb0b157",
+      "match": true,
+      "recorded": "e08826891cebceb4cf181a4195bc19558d503a83adf7b7c73cd7a6d43fb0b157"
+    }
+  },
+  "fresh_run_id": "run-597cb231f37a",
+  "fresh_run_status": "done",
+  "recorded_run_status": "done",
+  "replay_equivalent": false,
+  "replay_event_id": "72c6bb5e-4911-4460-a9f9-0a89f1f1d6e1",
+  "replay_event_ledger": ".codex-pytest-temp/test_replay_detects_prompt_dri0/ops/event-ledger/replay-run-52f927b8ffa6-20260802T062131.888085Z.jsonl",
+  "replay_method": "equivalence",
+  "replayed_at": "2026-08-02T06:21:31Z",
+  "source_event_ledger": "ops/event-ledger/run-52f927b8ffa6.jsonl",
+  "source_run_id": "run-52f927b8ffa6",
+  "source_run_record": "ops/run-records/run-52f927b8ffa6.json"
+}

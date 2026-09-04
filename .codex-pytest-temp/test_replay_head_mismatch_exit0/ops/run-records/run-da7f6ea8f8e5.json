@@ -1,0 +1,27 @@
+{
+  "agent_id": "anthropic:claude-sonnet-4-6",
+  "finished_at": "2026-08-02T06:21:30Z",
+  "gate_results_summary": {
+    "all_passed": true,
+    "gates_failed": [],
+    "gates_passed": [
+      "refusal_precision_threshold"
+    ]
+  },
+  "id": "run-da7f6ea8f8e5",
+  "inputs": [
+    {
+      "kind": "eval_suite",
+      "ref": "repo://supplier-risk-rag-agent@PENDING/eval_suites/refusal_cases.yaml"
+    }
+  ],
+  "outputs": [],
+  "prompt_snapshot_hash": "39c8c12b83a75b82aede7425dc3196c415c20b48c047f0f4cb79c7354f9c441b",
+  "runtime": "supplier-risk-rag-agent-evals",
+  "sandbox_image_ref": "repo://supplier-risk-rag-agent@0000000000000000000000000000000000000000/",
+  "spec_id": "eval_suites/refusal_cases.yaml",
+  "started_at": "2026-08-02T06:21:30Z",
+  "status": "done",
+  "tool_schemas_snapshot_hash": "e08826891cebceb4cf181a4195bc19558d503a83adf7b7c73cd7a6d43fb0b157",
+  "workspace_id": "supplier-risk-rag-agent"
+}

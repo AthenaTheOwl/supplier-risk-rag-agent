@@ -1,0 +1,20 @@
+{
+  "id": "3c0377cc-e071-4e83-885b-40a6e17bb24d",
+  "query": "Should we tier-up NVIDIA?",
+  "status": "supported",
+  "rule_id": "tier1-evidence-bar",
+  "evidence_pointers": [
+    {
+      "chunk_id": "nvda-10k-2024-supplier-concentration",
+      "accession": "0001045810-24-000316",
+      "cik": "1045810",
+      "section": "Item 1A",
+      "span_text": "example verbatim span",
+      "span_offsets": null
+    }
+  ],
+  "confidence": 0.82,
+  "produced_at": "2026-06-05T18:00:00Z",
+  "model": null,
+  "notes": null
+}

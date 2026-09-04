@@ -1,1 +1,5 @@
 .
+
+# required by scripts/validate_data_conformance.py (DEC: data-conformance gate)
+jsonschema
+pyyaml

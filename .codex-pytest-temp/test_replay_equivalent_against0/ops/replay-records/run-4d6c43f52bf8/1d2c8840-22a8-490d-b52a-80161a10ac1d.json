@@ -1,0 +1,43 @@
+{
+  "comparison": {
+    "gate_results_summary": {
+      "fresh": {
+        "all_passed": true,
+        "gates_failed": [],
+        "gates_passed": [
+          "refusal_precision_threshold"
+        ]
+      },
+      "match": true,
+      "recorded": {
+        "all_passed": true,
+        "gates_failed": [],
+        "gates_passed": [
+          "refusal_precision_threshold"
+        ]
+      }
+    },
+    "prompt_snapshot_hash": {
+      "fresh": "39c8c12b83a75b82aede7425dc3196c415c20b48c047f0f4cb79c7354f9c441b",
+      "match": true,
+      "recorded": "39c8c12b83a75b82aede7425dc3196c415c20b48c047f0f4cb79c7354f9c441b"
+    },
+    "replay_equivalent": true,
+    "tool_schemas_snapshot_hash": {
+      "fresh": "e08826891cebceb4cf181a4195bc19558d503a83adf7b7c73cd7a6d43fb0b157",
+      "match": true,
+      "recorded": "e08826891cebceb4cf181a4195bc19558d503a83adf7b7c73cd7a6d43fb0b157"
+    }
+  },
+  "fresh_run_id": "run-620f0c7e6ff2",
+  "fresh_run_status": "done",
+  "recorded_run_status": "done",
+  "replay_equivalent": true,
+  "replay_event_id": "1d2c8840-22a8-490d-b52a-80161a10ac1d",
+  "replay_event_ledger": ".codex-pytest-temp/test_replay_equivalent_against0/ops/event-ledger/replay-run-4d6c43f52bf8-20260802T062128.426720Z.jsonl",
+  "replay_method": "equivalence",
+  "replayed_at": "2026-08-02T06:21:28Z",
+  "source_event_ledger": "ops/event-ledger/run-4d6c43f52bf8.jsonl",
+  "source_run_id": "run-4d6c43f52bf8",
+  "source_run_record": "ops/run-records/run-4d6c43f52bf8.json"
+}

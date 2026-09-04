@@ -1,0 +1,60 @@
+{
+  "chunk_file": "chunks.jsonl",
+  "companies": [
+    {
+      "chunk_count": 2,
+      "cik": "0000320193",
+      "fetched_filings": [
+        {
+          "accession": "0000320193-24-000081",
+          "cik": "0000320193",
+          "filing_date": "2024-08-02",
+          "form": "10-Q",
+          "primary_document": "aapl-10q.htm",
+          "report_date": "2024-06-29",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019324000081/aapl-10q.htm"
+        },
+        {
+          "accession": "0000320193-24-000123",
+          "cik": "0000320193",
+          "filing_date": "2024-11-01",
+          "form": "10-K",
+          "primary_document": "aapl-10k.htm",
+          "report_date": "2024-09-28",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019324000123/aapl-10k.htm"
+        }
+      ],
+      "name": "Apple Inc.",
+      "planned_filings": [
+        {
+          "accession": "0000320193-24-000081",
+          "cik": "0000320193",
+          "filing_date": "2024-08-02",
+          "form": "10-Q",
+          "primary_document": "aapl-10q.htm",
+          "report_date": "2024-06-29",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019324000081/aapl-10q.htm"
+        },
+        {
+          "accession": "0000320193-24-000123",
+          "cik": "0000320193",
+          "filing_date": "2024-11-01",
+          "form": "10-K",
+          "primary_document": "aapl-10k.htm",
+          "report_date": "2024-09-28",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019324000123/aapl-10k.htm"
+        }
+      ],
+      "ticker": "AAPL"
+    }
+  ],
+  "dry_run": false,
+  "generated_at": "2026-05-25T12:00:00Z",
+  "source_manifest": "data/sample_manifest.json",
+  "totals": {
+    "chunks_written": 2,
+    "companies": 1,
+    "filings_planned": 2,
+    "filings_written": 2
+  }
+}
