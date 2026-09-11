@@ -13,8 +13,35 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: wake hosted demo
+        # Probe the unauthenticated health endpoint WITHOUT following
+        # redirects. `curl --fail --location` used to chase the auth
+        # bounce until it hit the redirect cap and died with a bare
+        # exit 47, which said nothing about the cause; the demo had been
+        # unreachable since at least 2026-08-03 behind that exit code.
         run: |
-          curl --fail --location --max-time 45 --retry 2 --retry-delay 10 \
-            https://supplier-risk-rag-agent.streamlit.app/ \
-            --output /tmp/supplier-risk-rag-agent.html
-          test -s /tmp/supplier-risk-rag-agent.html
+          set -uo pipefail
+          URL="https://supplier-risk-rag-agent.streamlit.app"
+
+          code=$(curl -s -o /tmp/health.txt -w '%{http_code}' --max-time 45 \
+                   --retry 2 --retry-delay 10 "$URL/_stcore/health" || echo 000)
+          loc=$(curl -s -o /dev/null -w '%{redirect_url}' --max-time 45 "$URL/_stcore/health" || true)
+
+          echo "health endpoint: HTTP $code"
+          [ -n "$loc" ] && echo "redirects to: $loc"
+
+          if [ "$code" = "200" ]; then
+            echo "Demo is awake and publicly reachable."
+            exit 0
+          fi
+
+          if [ "$code" = "303" ] || [ "$code" = "302" ]; then
+            case "$loc" in
+              *share.streamlit.io/-/auth*|*/-/login*)
+                echo "::error::The hosted demo is NOT public. $URL/_stcore/health returns HTTP $code redirecting to Streamlit's viewer auth, so every visitor hits a login wall and the README link is dead. This is an app-sharing setting, not a code fault: the app boots clean locally and the rest of CI is green. Fix at https://share.streamlit.io -> this app -> Settings -> Sharing -> set viewer access to public/anyone."
+                exit 1
+                ;;
+            esac
+          fi
+
+          echo "::error::Hosted demo unhealthy: HTTP $code from $URL/_stcore/health${loc:+ (redirect: $loc)}. If the app is merely asleep, opening it once in a browser wakes it; if this persists, check the Streamlit Cloud logs."
+          exit 1
