@@ -13,35 +13,25 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: wake hosted demo
-        # Probe the unauthenticated health endpoint WITHOUT following
-        # redirects. `curl --fail --location` used to chase the auth
-        # bounce until it hit the redirect cap and died with a bare
-        # exit 47, which said nothing about the cause; the demo had been
-        # unreachable since at least 2026-08-03 behind that exit code.
         run: |
           set -uo pipefail
           URL="https://supplier-risk-rag-agent.streamlit.app"
-
-          code=$(curl -s -o /tmp/health.txt -w '%{http_code}' --max-time 45 \
-                   --retry 2 --retry-delay 10 "$URL/_stcore/health" || echo 000)
-          loc=$(curl -s -o /dev/null -w '%{redirect_url}' --max-time 45 "$URL/_stcore/health" || true)
-
-          echo "health endpoint: HTTP $code"
-          [ -n "$loc" ] && echo "redirects to: $loc"
-
-          if [ "$code" = "200" ]; then
-            echo "Demo is awake and publicly reachable."
-            exit 0
-          fi
-
-          if [ "$code" = "303" ] || [ "$code" = "302" ]; then
-            case "$loc" in
-              *share.streamlit.io/-/auth*|*/-/login*)
-                echo "::error::The hosted demo is NOT public. $URL/_stcore/health returns HTTP $code redirecting to Streamlit's viewer auth, so every visitor hits a login wall and the README link is dead. This is an app-sharing setting, not a code fault: the app boots clean locally and the rest of CI is green. Fix at https://share.streamlit.io -> this app -> Settings -> Sharing -> set viewer access to public/anyone."
-                exit 1
-                ;;
-            esac
-          fi
-
-          echo "::error::Hosted demo unhealthy: HTTP $code from $URL/_stcore/health${loc:+ (redirect: $loc)}. If the app is merely asleep, opening it once in a browser wakes it; if this persists, check the Streamlit Cloud logs."
+          JAR=$(mktemp)
+          UA="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0 Safari/537.36"
+          # Streamlit Cloud bounces every first visit through its auth endpoint to set a
+          # cookie, public apps included. Follow the bounce with a cookie jar, as a
+          # browser does, and judge by where it lands.
+          out=$(curl -s -L -c "$JAR" -b "$JAR" -A "$UA" --max-redirs 10 --max-time 60 \
+                  --retry 2 --retry-delay 10 -o /dev/null \
+                  -w '%{http_code} %{url_effective}' "$URL/" || echo "000 curl-error")
+          code=${out%% *}; final=${out#* }
+          echo "landed on: $final (HTTP $code)"
+          case "$final" in
+            "$URL"/*|"$URL")
+              if [ "$code" = "200" ]; then echo "Demo is publicly reachable."; exit 0; fi ;;
+            *share.streamlit.io*|*/-/login*)
+              echo "::error::The hosted demo is NOT public: a cookie-carrying visitor ends at $final. Fix at https://share.streamlit.io -> this app -> Share -> Make this app public."
+              exit 1 ;;
+          esac
+          echo "::error::Hosted demo unhealthy: HTTP $code at $final. If the app is asleep or was dropped for inactivity, open it once in a browser to wake or reboot it."
           exit 1
