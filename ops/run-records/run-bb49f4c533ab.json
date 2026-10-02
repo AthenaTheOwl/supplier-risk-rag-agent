@@ -12,13 +12,13 @@
   "inputs": [
     {
       "kind": "eval_suite",
-      "ref": "repo://supplier-risk-rag-agent@PENDING/eval_suites/refusal_cases.yaml"
+      "ref": "repo://supplier-risk-rag-agent@75bf4edad5d1b28e6dccf31d9ae47a6755521815/eval_suites/refusal_cases.yaml"
     }
   ],
   "outputs": [],
   "prompt_snapshot_hash": "39c8c12b83a75b82aede7425dc3196c415c20b48c047f0f4cb79c7354f9c441b",
   "runtime": "supplier-risk-rag-agent-evals",
-  "sandbox_image_ref": "repo://supplier-risk-rag-agent@PENDING/",
+  "sandbox_image_ref": "repo://supplier-risk-rag-agent@75bf4edad5d1b28e6dccf31d9ae47a6755521815/",
   "spec_id": "eval_suites/refusal_cases.yaml",
   "started_at": "2026-10-02T23:22:40Z",
   "status": "done",
