@@ -74,6 +74,8 @@ python scripts/validate_policies.py
 
 The five eval suites run against the in-memory sample corpus with no vendor keys required.
 
+A scheduled workflow, `.github/workflows/replay-freshness.yml`, replays the canonical sample twice a month and commits the dated replay record, so the reproducibility claim is re-checked on a fixed schedule instead of when someone remembers.
+
 ## Live demo
 
 Deploy with Streamlit Cloud using:

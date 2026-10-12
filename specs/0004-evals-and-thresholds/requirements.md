@@ -788,3 +788,22 @@ Acceptance:
   `adoption_ladder` shape.
 - `python scripts/validate_decisions.py` emits no WARN against
   any of the three retrofitted DECs.
+
+### R-EVL-041: scheduled replay commits a dated replay record
+
+WHEN the 1st or 15th of a month arrives, or a maintainer dispatches
+`.github/workflows/replay-freshness.yml`, THE SYSTEM SHALL replay the
+canonical sample `run-643dff8f3b9c` with the replay-smoke path from
+`run-evidence-gates.yml` and, only when the replay exits 0, commit
+the new replay record and its per-replay ledger to `main`.
+
+Acceptance:
+- The workflow carries `schedule` (`cron: "17 6 1,15 * *"`) and
+  `workflow_dispatch`, `permissions: contents: write`, and a
+  concurrency group.
+- The commit adds exactly two files: one
+  `ops/replay-records/run-643dff8f3b9c/<replay-event-id>.json` whose
+  `replayed_at` is the replay time, and the
+  `ops/event-ledger/replay-run-643dff8f3b9c-*.jsonl` file that report
+  names under `replay_event_ledger`. The step never runs `git add -A`.
+- A replay that exits non-zero commits nothing.
