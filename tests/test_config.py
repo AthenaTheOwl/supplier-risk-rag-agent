@@ -8,15 +8,21 @@ key falls back to deterministic retrieval), R-DEP-003 (the Streamlit
 local-env gate guards dotenv loading).
 """
 
+import json
+from pathlib import Path
+
 import pytest
 
 from src import config as config_module
 from src.config import (
     DEFAULT_ANTHROPIC_MODEL,
     MissingKeyError,
+    ModelConfig,
+    get_cli_model_config,
     get_keys,
     get_model_config,
 )
+from src.evals import runner
 
 
 def test_get_keys_prefers_session_state(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -117,3 +123,53 @@ def test_model_config_keeps_dotenv_behind_local_gate(
     monkeypatch.setattr(config_module, "load_dotenv", lambda **kwargs: calls.append(True))
     get_model_config()
     assert len(calls) == expected_calls
+
+
+def _fake_dotenv(monkeypatch: pytest.MonkeyPatch) -> list[bool]:
+    """Stand in for a developer `.env` that selects OpenAI."""
+    calls: list[bool] = []
+    monkeypatch.delenv("LLM_PROVIDER", raising=False)
+    monkeypatch.delenv("LLM_MODEL", raising=False)
+
+    def load(**kwargs: object) -> None:
+        calls.append(True)
+        monkeypatch.setenv("LLM_PROVIDER", "openai")
+        monkeypatch.setenv("LLM_MODEL", "fake-dotenv-model")
+
+    monkeypatch.setattr(config_module, "load_dotenv", load)
+    return calls
+
+
+def test_streamlit_model_config_ignores_dotenv_without_local_gate(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls = _fake_dotenv(monkeypatch)
+    monkeypatch.delenv("STREAMLIT_LOCAL", raising=False)
+    assert get_model_config() == ModelConfig("anthropic", DEFAULT_ANTHROPIC_MODEL)
+    assert not calls
+
+
+def test_cli_model_config_reads_dotenv_without_streamlit_local(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls = _fake_dotenv(monkeypatch)
+    monkeypatch.delenv("STREAMLIT_LOCAL", raising=False)
+    assert get_cli_model_config() == ModelConfig("openai", "fake-dotenv-model")
+    assert calls
+
+
+def test_eval_runner_records_dotenv_model_config(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+) -> None:
+    _fake_dotenv(monkeypatch)
+    monkeypatch.delenv("STREAMLIT_LOCAL", raising=False)
+    monkeypatch.setenv(runner.EVENT_LEDGER_ENV, str(tmp_path / "event-ledger"))
+    monkeypatch.setenv(runner.RUN_RECORDS_ENV, str(tmp_path / "run-records"))
+    metrics = {"refusal_precision": 1.0, "gate_metric": "refusal_precision",
+               "threshold": 0.85, "passed": True}
+    _, record_path = runner._record_suite_run(
+        "refusal_cases", metrics, [], runner.build_parser().parse_args([]),
+        started_at="2026-10-19T00:00:00Z", finished_at="2026-10-19T00:00:01Z",
+    )
+    record = json.loads(record_path.read_text(encoding="utf-8"))
+    assert record["agent_id"] == "openai:fake-dotenv-model"

@@ -121,6 +121,9 @@ def get_cli_keys(
 def get_model_config() -> ModelConfig:
     """Return configured chat provider and model.
 
+    The Streamlit app reads `.env` here only when STREAMLIT_LOCAL=1. CLI jobs use
+    `get_cli_model_config`.
+
     The default Anthropic model uses the active Claude Sonnet 4.6 API ID. The older
     Sonnet 4 snapshot `claude-sonnet-4-20250514` is deprecated and scheduled for
     retirement.
@@ -137,6 +140,16 @@ def get_model_config() -> ModelConfig:
     else:
         model = DEFAULT_ANTHROPIC_MODEL
     return ModelConfig(provider=provider, model=model)
+
+
+def get_cli_model_config() -> ModelConfig:
+    """Return configured chat provider and model for local CLI jobs.
+
+    Like `get_cli_keys`, this reads a local `.env` file without the Streamlit gate.
+    """
+
+    load_dotenv(override=False)
+    return get_model_config()
 
 
 def sec_user_agent() -> str:
