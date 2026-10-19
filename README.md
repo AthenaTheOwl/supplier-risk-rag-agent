@@ -8,7 +8,7 @@ The deployed app is BYOK. Paste your Anthropic key, and optionally your OpenAI k
 
 ## What makes this RAG worth reading
 
-- Citation faithfulness is verified after generation. Every cited span must appear verbatim in a retrieved chunk; `src/retrieval/citations.py` raises if it does not.
+- Citation spans and filing attribution are verified after generation. Every cited span must appear verbatim in a retrieved chunk, and its CIK, accession and section must match that chunk; `src/retrieval/citations.py` raises if they do not. [Evidence boundary and negative tests](docs/citation-evidence-boundary.md).
 - Five eval suites gate every push: retrieval quality, citation faithfulness, supplier-risk questions, refusal cases, and adversarial refusal precision.
 - The default ranker is deterministic: 60% normalized BM25, 25% cosine over local hashing embeddings, and 15% term overlap.
 - Cross-encoder reranking remains opt-in because the sample experiment broke citation faithfulness and was reverted.

@@ -5,6 +5,8 @@ post-generation), R-CIT-002 (citations carry filing-level identifiers),
 R-CIT-003 (verifier accepts SearchResult and DocumentChunk shapes).
 """
 
+from dataclasses import replace
+
 import pytest
 
 from src.retrieval.citations import (
@@ -59,3 +61,13 @@ def test_verify_rejects_tampered_offsets() -> None:
     )
     with pytest.raises(CitationVerificationError):
         verify_citations([citation], [chunk])
+
+
+@pytest.mark.parametrize("field", ["cik", "accession", "section"])
+def test_verbatim_span_cannot_be_attributed_to_a_different_filing(field: str) -> None:
+    """An existing quote is insufficient when its filing-level identity is altered."""
+    chunk = load_sample_corpus()[0]
+    citation = citation_from_chunk(chunk, "limited number of suppliers", label="C1")
+    forged = replace(citation, **{field: "synthetic-wrong-source"})
+    with pytest.raises(CitationVerificationError, match="filing identity"):
+        verify_citations([forged], [chunk])
