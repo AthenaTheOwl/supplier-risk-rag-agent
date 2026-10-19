@@ -81,6 +81,7 @@ def test_openai_selection_accepts_only_openai_session_key(monkeypatch: pytest.Mo
 
 
 def test_openai_env_fallback_keeps_local_gate(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(config_module, "load_dotenv", lambda **kwargs: None)
     monkeypatch.setenv("OPENAI_API_KEY", "fake-openai")
     monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
     monkeypatch.setenv("STREAMLIT_LOCAL", "0")
