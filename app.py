@@ -13,7 +13,7 @@ from src.retrieval.ranker import HybridRanker
 
 
 @st.cache_resource(show_spinner=False)
-def load_agent(use_reranker: bool = False) -> SupplierRiskAgent:
+def load_ranker(use_reranker: bool = False) -> HybridRanker:
     chunks = load_sample_corpus()
     reranker = None
     if use_reranker:
@@ -21,7 +21,12 @@ def load_agent(use_reranker: bool = False) -> SupplierRiskAgent:
         from src.retrieval.reranker import CrossEncoderReranker
 
         reranker = CrossEncoderReranker()
-    return SupplierRiskAgent(HybridRanker(chunks, reranker=reranker))
+    return HybridRanker(chunks, reranker=reranker)
+
+
+def load_agent(use_reranker: bool = False) -> SupplierRiskAgent:
+    # Cache expensive retrieval resources, not answer behavior across deployments.
+    return SupplierRiskAgent(load_ranker(use_reranker=use_reranker))
 
 
 def sidebar_keys() -> None:

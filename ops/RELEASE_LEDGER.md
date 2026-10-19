@@ -18,6 +18,20 @@ Each entry has the shape:
 
 ## Entries
 
+## 2026-10-19 — 98aa0e160fea824658a638d2aa3f6df750790d97 refresh answer behavior across deployments
+
+- scope: Cache the expensive retrieval ranker and construct the current answer
+  agent for each run. Streamlit previously kept the pre-deployment agent object
+  after the new UI loaded, causing missing generation metadata and retaining old
+  answer behavior.
+- proof:
+  - tests/test_app_agent_cache.py — class-change regression fails before the repair;
+    the repaired factory returns the current agent and reuses the same ranker
+  - pytest — 142 passed, 1 skipped; 88.73% coverage
+  - native governance gates and changed-file Ruff — pass
+- limits: This regression simulates a hot deployment without a provider request.
+  Hosted credentialed acceptance is recorded separately by the release operator.
+
 ## 2026-10-19 — 4b25326fe85c11078970a1bde23ae0a8569a168b bounded live evidence ordering
 
 - scope: Replace unrestricted live answer prose with a complete permutation of
