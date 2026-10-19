@@ -15,6 +15,7 @@ from src.retrieval.ranker import HybridRanker
 QUERY = "Which companies disclosed customer-concentration risk?"
 FORGED = "Fabricated audit claim ZXQ-928471 is proven."
 OFFLINE_KEYS = Keys(anthropic_key="fake-offline-test")
+ORDER = json.dumps({"citation_labels": ["C4", "C3", "C2", "C1"]})
 
 
 class FakeLLM:
@@ -51,6 +52,17 @@ def agent() -> SupplierRiskAgent:
     json.dumps({"citation_labels": [1, "C2", "C3", "C4"]}),
     "null",
     '{"citation_labels":[],"citation_labels":["C1","C2","C3","C4"]}',
+    # A fence is stripped only when it wraps the whole reply around one JSON object.
+    "Here is the order:\n```json\n" + ORDER + "\n```",
+    "```json\n" + ORDER + "\n```\n" + FORGED,
+    "```json\n" + FORGED + "\n" + ORDER + "\n```",
+    "```json\n{not JSON}\n```",
+    "```json\n" + ORDER + ORDER + "\n```",
+    "```json\n" + ORDER + "\n```\n```json\n" + ORDER + "\n```",
+    "```json\n" + ORDER,
+    "```json " + ORDER + " ```",
+    "```python\n" + ORDER + "\n```",
+    "```json\n" + json.dumps({"citation_labels": ["C1", "C2", "C3"]}) + "\n```",
 ])
 def test_invalid_live_output_keeps_only_verified_local_answer(
     agent: SupplierRiskAgent, response: str,
@@ -85,6 +97,29 @@ def test_live_order_is_complete_permutation_of_original_verified_evidence(
     assert verify_citations(answer.citations, load_sample_corpus()) == answer.citations
     assert answer.generation_mode == "live_ordered"
     assert not answer.generation_reason
+    assert client.calls == 1
+
+
+@pytest.mark.parametrize("response", [
+    "```json\n" + ORDER + "\n```",
+    "```\n" + ORDER + "\n```",
+    "\n  ```json\n" + ORDER + "\n```\n\n",
+    "```json\r\n" + json.dumps({"citation_labels": ["C4", "C3", "C2", "C1"]}, indent=2) + "\r\n```",
+    "\n\t " + ORDER + " \n",
+])
+def test_fenced_or_padded_single_object_is_accepted(
+    agent: SupplierRiskAgent, response: str,
+) -> None:
+    deterministic = agent.answer(QUERY)
+    client = FakeLLM(response)
+    answer = agent.answer(QUERY, use_live_llm=True, keys=OFFLINE_KEYS, llm_client=client)
+    assert answer.generation_mode == "live_ordered"
+    assert not answer.generation_reason
+    assert [c.label for c in answer.citations] == ["C4", "C3", "C2", "C1"]
+    assert {c.label: c.as_dict() for c in answer.citations} == {
+        c.label: c.as_dict() for c in deterministic.citations
+    }
+    assert "```" not in answer.text
     assert client.calls == 1
 
 

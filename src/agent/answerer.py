@@ -13,6 +13,8 @@ from src.retrieval.citations import Citation, citation_from_chunk, verify_citati
 from src.retrieval.ranker import HybridRanker, SearchResult, tokenize
 
 SENTENCE_RE = re.compile(r"(?<=[.!?])\s+")
+# One fence around the whole reply: ``` or ```json on its own opening line, ``` closing.
+JSON_FENCE_RE = re.compile(r"\s*```(?:json)?[ \t]*\r?\n(?P<body>.*?)\r?\n```\s*", re.DOTALL)
 
 
 @dataclass(frozen=True)
@@ -79,6 +81,9 @@ def _live_citation_order(
     response: str, citations: Sequence[Citation],
 ) -> tuple[list[Citation] | None, str | None]:
     """Accept a complete permutation; no generated prose crosses this boundary."""
+    fenced = JSON_FENCE_RE.fullmatch(response) if isinstance(response, str) else None
+    if fenced:
+        response = fenced.group("body")
     try:
         payload = json.loads(response, object_pairs_hook=_unique_json_fields)
     except (TypeError, ValueError):
