@@ -1,0 +1,155 @@
+{
+  "kind": "offline deterministic suite and synthetic response-boundary evaluation",
+  "base_commit": "b84572dc8682169cce453381acd9e2f5fd082b2b",
+  "evaluated_commit": "b84572dc8682169cce453381acd9e2f5fd082b2b",
+  "provider_requests": 0,
+  "deterministic_suites": {
+    "retrieval_quality": {
+      "recall_at_5": 1.0,
+      "mrr": 1.0,
+      "total": 20,
+      "gate_metric": "recall_at_5",
+      "threshold": 0.7,
+      "passed": true
+    },
+    "citation_faithfulness": {
+      "faithfulness": 1.0,
+      "answered_rate": 1.0,
+      "total": 15,
+      "gate_metric": "faithfulness",
+      "threshold": 0.95,
+      "passed": true
+    },
+    "supplier_risk_questions": {
+      "answer_quality": 0.92,
+      "total": 25,
+      "gate_metric": "answer_quality",
+      "threshold": 0.8,
+      "passed": true
+    },
+    "refusal_cases": {
+      "refusal_precision": 1.0,
+      "total": 10,
+      "gate_metric": "refusal_precision",
+      "threshold": 0.85,
+      "passed": true
+    },
+    "adversarial_refusal_precision": {
+      "refusal_precision": 1.0,
+      "total": 10,
+      "gate_metric": "refusal_precision",
+      "threshold": 0.85,
+      "passed": true
+    }
+  },
+  "synthetic_cases": [
+    {
+      "case": "json_fence",
+      "fake_client_calls": 1,
+      "generation_mode": "live_rejected",
+      "generation_reason": "The response was not valid JSON.",
+      "citation_order": [
+        "C1",
+        "C2",
+        "C3",
+        "C4"
+      ],
+      "citations_match_deterministic_set": true
+    },
+    {
+      "case": "bare_fence",
+      "fake_client_calls": 1,
+      "generation_mode": "live_rejected",
+      "generation_reason": "The response was not valid JSON.",
+      "citation_order": [
+        "C1",
+        "C2",
+        "C3",
+        "C4"
+      ],
+      "citations_match_deterministic_set": true
+    },
+    {
+      "case": "padded_object",
+      "fake_client_calls": 1,
+      "generation_mode": "live_ordered",
+      "generation_reason": null,
+      "citation_order": [
+        "C4",
+        "C3",
+        "C2",
+        "C1"
+      ],
+      "citations_match_deterministic_set": true
+    },
+    {
+      "case": "prose_before_fence",
+      "fake_client_calls": 1,
+      "generation_mode": "live_rejected",
+      "generation_reason": "The response was not valid JSON.",
+      "citation_order": [
+        "C1",
+        "C2",
+        "C3",
+        "C4"
+      ],
+      "citations_match_deterministic_set": true
+    },
+    {
+      "case": "prose_after_fence",
+      "fake_client_calls": 1,
+      "generation_mode": "live_rejected",
+      "generation_reason": "The response was not valid JSON.",
+      "citation_order": [
+        "C1",
+        "C2",
+        "C3",
+        "C4"
+      ],
+      "citations_match_deterministic_set": true
+    },
+    {
+      "case": "two_objects_in_fence",
+      "fake_client_calls": 1,
+      "generation_mode": "live_rejected",
+      "generation_reason": "The response was not valid JSON.",
+      "citation_order": [
+        "C1",
+        "C2",
+        "C3",
+        "C4"
+      ],
+      "citations_match_deterministic_set": true
+    },
+    {
+      "case": "malformed_in_fence",
+      "fake_client_calls": 1,
+      "generation_mode": "live_rejected",
+      "generation_reason": "The response was not valid JSON.",
+      "citation_order": [
+        "C1",
+        "C2",
+        "C3",
+        "C4"
+      ],
+      "citations_match_deterministic_set": true
+    },
+    {
+      "case": "incomplete_permutation_in_fence",
+      "fake_client_calls": 1,
+      "generation_mode": "live_rejected",
+      "generation_reason": "The response was not valid JSON.",
+      "citation_order": [
+        "C1",
+        "C2",
+        "C3",
+        "C4"
+      ],
+      "citations_match_deterministic_set": true
+    }
+  ],
+  "limits": [
+    "Synthetic provider responses establish boundary behavior, not live model quality.",
+    "No provider requests; the CLI .env change does not affect keyless evals and is covered by tests/test_config.py."
+  ]
+}
