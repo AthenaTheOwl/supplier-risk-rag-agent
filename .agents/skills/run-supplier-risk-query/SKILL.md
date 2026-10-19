@@ -41,9 +41,9 @@ Drives one supplier-risk question end-to-end:
 5. Assemble the cited answer (`src/agent/answerer.py`), verifying
    each citation span against the retrieved chunks
    (`src/retrieval/citations.py`).
-6. When the operator supplies a live Claude key, rewrite the
-   answer wording while keeping the verified spans as the citation
-   source of truth.
+6. When the operator supplies the selected provider's key, request a
+   complete ordering of the verified citation labels. Local code
+   renders the original spans; no generated prose becomes a claim.
 7. Return the cited answer or the refusal.
 
 ## Trigger
@@ -69,9 +69,11 @@ behavior. Key rules:
 - Retrieval is deterministic in CI. The hashing embedder runs
   without API keys. The OpenAI embedder is opt-in for live
   experiments only.
-- The live Claude rewrite path receives only the retrieved context
-  and the deterministic cited answer. The verified spans remain
-  the source of truth.
+- The live ordering path receives the question and verified cited
+  answer. It must return every supplied label exactly once in JSON.
+  Invalid output or provider failure falls back to the deterministic
+  answer with distinct mode and reason metadata. The UI shows the
+  fallback status explicitly.
 - No edits to `src/agent/prompts/` without a paired eval result
   update under `reports/`. The
   `eval-suite-required-before-prompt-change` policy fires
@@ -109,5 +111,5 @@ version 0.1.0 is gated on `human_approval`.
 - Document the SEC `User-Agent` requirement for live EDGAR fetches
   in the skill body once the ingestion subsystem earns its own
   spec.
-- Decide whether the live Claude rewrite path graduates as a
-  separate skill once a second LLM provider is wired in.
+- Decide whether live evidence ordering graduates as a separate
+  skill once its end-to-end quality eval is defined.

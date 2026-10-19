@@ -4,7 +4,10 @@ Twenty filing excerpts from ten CIKs. Ask about export controls and every answer
 
 **Live demo:** [supplier-risk-rag-agent.streamlit.app](https://supplier-risk-rag-agent.streamlit.app)
 
-The deployed app is BYOK. Paste your Anthropic key, and optionally your OpenAI key, into the sidebar. The key lives in `st.session_state` for the browser session only; it is never logged, stored, or persisted. CI evals run without keys.
+The deployed app is BYOK. Paste the key for its selected provider into the sidebar.
+Anthropic is the default; an OpenAI key is required only when `LLM_PROVIDER=openai`
+is configured. Keys live in `st.session_state` for the browser session only; they
+are never logged, stored, or persisted. CI evals run without keys.
 
 ## What makes this RAG worth reading
 
@@ -23,6 +26,23 @@ Which suppliers disclosed export-control exposure?
 ```
 
 Then inspect the citations. If a span cannot be verified against the retrieved text, the answer should refuse instead of sounding confident.
+
+### Live evidence ordering
+
+The **Live evidence order** toggle lets the selected provider order the verified
+evidence. The provider must return every existing citation label exactly once in
+JSON. Local code renders the original source spans and filing identities in that
+order. Generated prose is never attached to the verified citations.
+
+The app distinguishes an accepted live order, rejected live output, and a failed
+provider call. Rejected or failed output falls back to the deterministic verified
+answer with a visible reason. This preserves the retrieved evidence coverage; it
+does not establish that the sample corpus is complete or current.
+
+The ordering guard and alternate-provider credential resolver have offline fake
+client/key regressions. The paired five-suite results are in
+`reports/live-evidence-order-baseline.json` and `reports/live-evidence-order-variant.json`.
+These reports make no claim of a live OpenAI API check.
 
 ## Try it locally
 

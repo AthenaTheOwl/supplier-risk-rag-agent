@@ -44,7 +44,9 @@ def _load_local_env_if_allowed() -> None:
         load_dotenv(override=False)
 
 
-def get_keys(session_state: Mapping[str, object] | None = None) -> Keys:
+def get_keys(
+    session_state: Mapping[str, object] | None = None, *, provider: str = DEFAULT_PROVIDER,
+) -> Keys:
     """Resolve keys for Streamlit BYOK.
 
     Precedence:
@@ -53,25 +55,31 @@ def get_keys(session_state: Mapping[str, object] | None = None) -> Keys:
     3. MissingKeyError.
     """
 
+    provider = provider.strip().lower()
+    if provider not in {"anthropic", "openai"}:
+        raise ValueError("Unsupported LLM provider configured.")
+    provider_label = "Anthropic" if provider == "anthropic" else "OpenAI"
+    required_name = "anthropic_key" if provider == "anthropic" else "openai_key"
     state = session_state or {}
     session_anthropic = _clean(state.get("anthropic_key"))
     session_openai = _clean(state.get("openai_key"))
 
-    if session_anthropic:
+    if _clean(state.get(required_name)):
         return Keys(
             anthropic_key=session_anthropic,
             openai_key=session_openai or None,
             source="session",
         )
 
-    if session_openai and not session_anthropic:
-        raise MissingKeyError("Paste an Anthropic API key to generate cited answers.")
+    if session_anthropic or session_openai:
+        raise MissingKeyError(f"Paste your {provider_label} API key for live evidence ordering.")
 
     _load_local_env_if_allowed()
     if os.environ.get("STREAMLIT_LOCAL") == "1":
         env_anthropic = _clean(os.environ.get("ANTHROPIC_API_KEY"))
         env_openai = _clean(os.environ.get("OPENAI_API_KEY"))
-        if env_anthropic:
+        required_key = env_anthropic if provider == "anthropic" else env_openai
+        if required_key:
             return Keys(
                 anthropic_key=env_anthropic,
                 openai_key=env_openai or None,
@@ -79,8 +87,8 @@ def get_keys(session_state: Mapping[str, object] | None = None) -> Keys:
             )
 
     raise MissingKeyError(
-        "Paste your Anthropic API key in the sidebar. Local env fallback is enabled only "
-        "when STREAMLIT_LOCAL=1."
+        f"Paste your {provider_label} API key in the sidebar. Local env fallback is enabled "
+        "only when STREAMLIT_LOCAL=1."
     )
 
 
@@ -118,7 +126,7 @@ def get_model_config() -> ModelConfig:
     retirement.
     """
 
-    load_dotenv(override=False)
+    _load_local_env_if_allowed()
     provider = _clean(os.environ.get("LLM_PROVIDER")) or DEFAULT_PROVIDER
     provider = provider.lower()
     configured_model = _clean(os.environ.get("LLM_MODEL"))

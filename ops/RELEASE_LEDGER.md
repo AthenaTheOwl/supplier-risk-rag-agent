@@ -18,6 +18,25 @@ Each entry has the shape:
 
 ## Entries
 
+## 2026-10-19 — 4b25326fe85c11078970a1bde23ae0a8569a168b bounded live evidence ordering
+
+- scope: Replace unrestricted live answer prose with a complete permutation of
+  verified citation labels. Render source spans locally and show distinct accepted,
+  rejected, and failed live states. Resolve keys for the selected provider and keep
+  dotenv loading behind the existing local-mode gate. Provider, model, and retrieval
+  defaults are unchanged.
+- proof:
+  - pytest — 141 passed, 1 skipped; 88.73% coverage
+  - tests/test_live_evidence_order.py — forged claims, invalid labels and output,
+    missing evidence, valid complete ordering, safe provider failure, and refusal
+  - tests/test_config.py — provider-aware fake keys and local dotenv boundary
+  - tests/test_app_generation_status.py — visible accepted, rejected, and failed modes
+  - reports/live-evidence-order-baseline.json and reports/live-evidence-order-variant.json
+    — all five deterministic suite scores unchanged; synthetic provider checks only
+  - native governance gates and changed-file Ruff — pass on the scoped source commit
+- limits: The paired reports contain no live provider requests. OpenAI live API
+  behavior is untested; its local credential resolver uses fake-key regressions.
+
 ## 2026-10-18 — bbca7acd9cc8ec33fd491cb759fdf701d4637dad citation filing identity
 
 - scope: Require a citation's CIK, accession, and section to match its retrieved

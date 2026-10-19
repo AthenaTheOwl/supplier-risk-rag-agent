@@ -10,6 +10,7 @@ local-env gate guards dotenv loading).
 
 import pytest
 
+from src import config as config_module
 from src.config import (
     DEFAULT_ANTHROPIC_MODEL,
     MissingKeyError,
@@ -67,3 +68,51 @@ def test_default_model_is_corrected_anthropic_id(monkeypatch: pytest.MonkeyPatch
     monkeypatch.delenv("LLM_PROVIDER", raising=False)
     monkeypatch.delenv("LLM_MODEL", raising=False)
     assert get_model_config().model == DEFAULT_ANTHROPIC_MODEL
+
+
+def test_openai_selection_accepts_only_openai_session_key(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.delenv("STREAMLIT_LOCAL", raising=False)
+    keys = get_keys({"openai_key": "fake-openai"}, provider="openai")
+    assert keys.openai_key == "fake-openai"
+    assert not keys.anthropic_key
+    assert keys.source == "session"
+    with pytest.raises(MissingKeyError, match="OpenAI"):
+        get_keys({"anthropic_key": "fake-anthropic"}, provider="openai")
+
+
+def test_openai_env_fallback_keeps_local_gate(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("OPENAI_API_KEY", "fake-openai")
+    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+    monkeypatch.setenv("STREAMLIT_LOCAL", "0")
+    with pytest.raises(MissingKeyError, match="OpenAI"):
+        get_keys({}, provider="openai")
+    monkeypatch.setenv("STREAMLIT_LOCAL", "1")
+    keys = get_keys({}, provider="openai")
+    assert keys.openai_key == "fake-openai"
+    assert not keys.anthropic_key
+    assert keys.source == "local-env"
+
+
+def test_selected_provider_session_does_not_mix_in_local_credentials(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("STREAMLIT_LOCAL", "1")
+    monkeypatch.setenv("OPENAI_API_KEY", "fake-local-openai")
+    with pytest.raises(MissingKeyError, match="OpenAI"):
+        get_keys({"anthropic_key": "fake-session-anthropic"}, provider="openai")
+
+
+def test_unknown_provider_fails_without_reading_keys() -> None:
+    with pytest.raises(ValueError, match="Unsupported LLM provider"):
+        get_keys({}, provider="unknown")
+
+
+@pytest.mark.parametrize("local_flag,expected_calls", [("0", 0), ("1", 1)])
+def test_model_config_keeps_dotenv_behind_local_gate(
+    monkeypatch: pytest.MonkeyPatch, local_flag: str, expected_calls: int,
+) -> None:
+    calls: list[bool] = []
+    monkeypatch.setenv("STREAMLIT_LOCAL", local_flag)
+    monkeypatch.setattr(config_module, "load_dotenv", lambda **kwargs: calls.append(True))
+    get_model_config()
+    assert len(calls) == expected_calls
