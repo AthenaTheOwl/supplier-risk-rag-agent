@@ -1,0 +1,99 @@
+{
+  "kind": "offline deterministic suite and synthetic response-boundary evaluation",
+  "base_commit": "1f66c83dd236d3c68734f6fa9a0651f4e1fcbd3f",
+  "provider_requests": 0,
+  "deterministic_suites": {
+    "retrieval_quality": {
+      "recall_at_5": 1.0,
+      "mrr": 1.0,
+      "total": 20,
+      "gate_metric": "recall_at_5",
+      "threshold": 0.7,
+      "passed": true
+    },
+    "citation_faithfulness": {
+      "faithfulness": 1.0,
+      "answered_rate": 1.0,
+      "total": 15,
+      "gate_metric": "faithfulness",
+      "threshold": 0.95,
+      "passed": true
+    },
+    "supplier_risk_questions": {
+      "answer_quality": 0.92,
+      "total": 25,
+      "gate_metric": "answer_quality",
+      "threshold": 0.8,
+      "passed": true
+    },
+    "refusal_cases": {
+      "refusal_precision": 1.0,
+      "total": 10,
+      "gate_metric": "refusal_precision",
+      "threshold": 0.85,
+      "passed": true
+    },
+    "adversarial_refusal_precision": {
+      "refusal_precision": 1.0,
+      "total": 10,
+      "gate_metric": "refusal_precision",
+      "threshold": 0.85,
+      "passed": true
+    }
+  },
+  "synthetic_cases": [
+    {
+      "case": "fabricated_claim_valid_label",
+      "fake_client_calls": 1,
+      "answer_refused": false,
+      "verified_citation_count": 4,
+      "fabricated_claim_not_in_corpus": true,
+      "fabricated_claim_returned": false,
+      "old_citations_attached": true,
+      "generation_mode": "live_rejected",
+      "generation_reason": "The response was not valid JSON."
+    },
+    {
+      "case": "fabricated_unknown_label",
+      "fake_client_calls": 1,
+      "answer_refused": false,
+      "verified_citation_count": 4,
+      "fabricated_claim_not_in_corpus": true,
+      "fabricated_claim_returned": false,
+      "old_citations_attached": true,
+      "generation_mode": "live_rejected",
+      "generation_reason": "The response was not valid JSON."
+    },
+    {
+      "case": "dropped_labels",
+      "fake_client_calls": 1,
+      "answer_refused": false,
+      "verified_citation_count": 4,
+      "fabricated_claim_not_in_corpus": true,
+      "fabricated_claim_returned": false,
+      "old_citations_attached": true,
+      "generation_mode": "live_rejected",
+      "generation_reason": "The response was not valid JSON."
+    },
+    {
+      "case": "empty_response",
+      "fake_client_calls": 1,
+      "answer_refused": false,
+      "verified_citation_count": 4,
+      "fabricated_claim_not_in_corpus": true,
+      "fabricated_claim_returned": false,
+      "old_citations_attached": true,
+      "generation_mode": "live_rejected",
+      "generation_reason": "The response was not valid JSON."
+    }
+  ],
+  "limits": [
+    "Synthetic provider responses establish boundary behavior, not live model quality.",
+    "OpenAI live API was not tested; only provider-aware key resolution has fake-key regressions."
+  ],
+  "source_sha256": {
+    "src/agent/answerer.py": "b176312e846a524adc43540a832214de4321837c15648929568b33f1ef1bc261",
+    "src/config.py": "aa7c44400427cb21340f5506dca9f1245c5e786c7565421bd6ea0c1f44dcb1ef",
+    "app.py": "5bedc86849fc8ca79b02190135a8aba0f0d1907752dd54dc3666ebc04be01df8"
+  }
+}

@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 
 from src.agent.answerer import SupplierRiskAgent
@@ -17,7 +18,7 @@ class FakeLLM:
         assert messages
         assert system
         assert max_tokens > 0
-        return "Live rewrite [C1]"
+        return json.dumps({"citation_labels": ["C4", "C3", "C2", "C1"]})
 
 
 def test_planner_adds_domain_subqueries() -> None:
@@ -44,7 +45,8 @@ def test_live_answer_branch_uses_supplied_client() -> None:
         keys=Keys(anthropic_key="sk-test"),
         llm_client=FakeLLM(),
     )
-    assert answer.text.startswith("Live rewrite")
+    assert answer.generation_mode == "live_ordered"
+    assert [citation.label for citation in answer.citations] == ["C4", "C3", "C2", "C1"]
     assert answer.citations
 
 

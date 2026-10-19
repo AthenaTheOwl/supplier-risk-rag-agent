@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from dataclasses import replace
+
 import streamlit as st
 
 from src.agent.answerer import SupplierRiskAgent
@@ -26,7 +28,7 @@ def sidebar_keys() -> None:
     with st.sidebar:
         st.markdown("### Bring your own key")
         st.caption(
-            "Paste your API keys below to enable live Claude answers. Keys stay in "
+            "Paste the selected provider's key to enable live evidence ordering. Keys stay in "
             "this browser session (`st.session_state`). They are not logged, stored, "
             "or sent anywhere except the vendor SDK call you triggered."
         )
@@ -34,15 +36,15 @@ def sidebar_keys() -> None:
             "Anthropic API key",
             type="password",
             value=st.session_state.get("anthropic_key", ""),
-            help="Required for the Live Claude toggle. Without it the app still "
+            help="Required when Anthropic is selected. Without a key the app still "
             "returns the deterministic cited answer.",
         )
         openai_key = st.text_input(
             "OpenAI API key",
             type="password",
             value=st.session_state.get("openai_key", ""),
-            help="Optional. Only needed for OpenAI-backed experiments or live "
-            "ingestion paths.",
+            help="Required when OpenAI is selected; optional for separate live embedding "
+            "experiments.",
         )
         st.session_state["anthropic_key"] = anthropic_key
         st.session_state["openai_key"] = openai_key
@@ -64,7 +66,7 @@ def sidebar_keys() -> None:
         st.divider()
         st.caption(
             "No keys? The app still works. Deterministic retrieval, verbatim-span "
-            "citations, and the four eval suites all run without vendor calls."
+            "citations, and the offline eval suites all run without vendor calls."
         )
 
 
@@ -73,17 +75,18 @@ def render_answer(query: str, use_live_llm: bool) -> None:
     agent = load_agent(use_reranker=use_reranker)
     keys = None
     key_error = None
+    model_config = get_model_config()
     try:
-        keys = get_keys(st.session_state)
-    except MissingKeyError as exc:
+        keys = get_keys(st.session_state, provider=model_config.provider)
+    except (MissingKeyError, ValueError) as exc:
         key_error = str(exc)
 
     if key_error:
         st.info(f"{key_error} Showing deterministic retrieval preview without a live LLM call.")
         use_live_llm = False
 
-    llm_client = LLMClient(keys, get_model_config()) if keys and use_live_llm else None
     try:
+        llm_client = LLMClient(keys, model_config) if keys and use_live_llm else None
         answer = agent.answer(
             query,
             use_live_llm=use_live_llm and llm_client is not None,
@@ -91,8 +94,27 @@ def render_answer(query: str, use_live_llm: bool) -> None:
             llm_client=llm_client,
         )
     except Exception as exc:
-        st.error(f"Live LLM call failed: {exc.__class__.__name__}. Showing local cited answer.")
-        answer = agent.answer(query, use_live_llm=False)
+        answer = replace(
+            agent.answer(query, use_live_llm=False),
+            generation_mode="live_failed",
+            generation_reason=f"Live client failed ({exc.__class__.__name__}).",
+        )
+
+    if answer.generation_mode == "live_ordered":
+        st.success("Live evidence order accepted. Every claim below is a verified source span.")
+        st.caption(f"Live provider: {model_config.provider} / {model_config.model}")
+    elif answer.generation_mode == "live_rejected":
+        st.warning(
+            f"Live output rejected: {answer.generation_reason} "
+            "Showing the deterministic verified answer."
+        )
+    elif answer.generation_mode == "live_failed":
+        st.error(
+            f"Live provider fallback: {answer.generation_reason} "
+            "Showing the deterministic verified answer."
+        )
+    else:
+        st.caption("Deterministic answer. No live provider call was made.")
 
     if answer.refused:
         st.warning(answer.text)
@@ -207,12 +229,12 @@ def main() -> None:
     st.title("Supplier Risk RAG Agent")
     st.caption(
         "Citation-faithful RAG over SEC EDGAR filings. Every claim points at a "
-        "verbatim span in a real 10-K; unverified spans get refused, not "
+        "verbatim span in a retrieved filing excerpt; unverified spans get refused, not "
         "paraphrased."
     )
     st.caption(
-        "Try a starter question below, or write your own. Toggle **Live Claude** "
-        "to rewrite the answer with your Anthropic key; leave it off for the "
+        "Try a starter question below, or write your own. Toggle **Live evidence order** "
+        "to order verified evidence with the selected provider's key; leave it off for the "
         "deterministic cited answer."
     )
 
@@ -229,7 +251,7 @@ def main() -> None:
         query = st.text_input("Your question", value=selected_example)
         cols = st.columns([1, 1, 4])
         with cols[0]:
-            live_llm = st.toggle("Live Claude", value=False)
+            live_llm = st.toggle("Live evidence order", value=False)
         with cols[1]:
             ask = st.button("Ask", type="primary")
 
