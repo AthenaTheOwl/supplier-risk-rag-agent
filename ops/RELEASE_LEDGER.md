@@ -18,49 +18,6 @@ Each entry has the shape:
 
 ## Entries
 
-## 2026-10-19 — 98aa0e160fea824658a638d2aa3f6df750790d97 refresh answer behavior across deployments
-
-- scope: Cache the expensive retrieval ranker and construct the current answer
-  agent for each run. Streamlit previously kept the pre-deployment agent object
-  after the new UI loaded, causing missing generation metadata and retaining old
-  answer behavior.
-- proof:
-  - tests/test_app_agent_cache.py — class-change regression fails before the repair;
-    the repaired factory returns the current agent and reuses the same ranker
-  - pytest — 142 passed, 1 skipped; 88.73% coverage
-  - native governance gates and changed-file Ruff — pass
-- limits: This regression simulates a hot deployment without a provider request.
-  Hosted credentialed acceptance is recorded separately by the release operator.
-
-## 2026-10-19 — 4b25326fe85c11078970a1bde23ae0a8569a168b bounded live evidence ordering
-
-- scope: Replace unrestricted live answer prose with a complete permutation of
-  verified citation labels. Render source spans locally and show distinct accepted,
-  rejected, and failed live states. Resolve keys for the selected provider and keep
-  dotenv loading behind the existing local-mode gate. Provider, model, and retrieval
-  defaults are unchanged.
-- proof:
-  - pytest — 141 passed, 1 skipped; 88.73% coverage
-  - tests/test_live_evidence_order.py — forged claims, invalid labels and output,
-    missing evidence, valid complete ordering, safe provider failure, and refusal
-  - tests/test_config.py — provider-aware fake keys and local dotenv boundary
-  - tests/test_app_generation_status.py — visible accepted, rejected, and failed modes
-  - reports/live-evidence-order-baseline.json and reports/live-evidence-order-variant.json
-    — all five deterministic suite scores unchanged; synthetic provider checks only
-  - native governance gates and changed-file Ruff — pass on the scoped source commit
-- limits: The paired reports contain no live provider requests. OpenAI live API
-  behavior is untested; its local credential resolver uses fake-key regressions.
-
-## 2026-10-18 — bbca7acd9cc8ec33fd491cb759fdf701d4637dad citation filing identity
-
-- scope: Require a citation's CIK, accession, and section to match its retrieved
-  chunk before accepting span evidence. Add separate negative cases for each
-  identity field and document the evidence boundary.
-- proof:
-  - pytest — full fresh-default suite and three identity mismatch regressions
-  - evals — all offline suites pass; prompts, models, and ranking are unchanged
-  - GitHub CI — seven checks pass on the scoped source commit above in PR #12
-
 ## 2026-04-29 — 70f3253 Initial supplier risk RAG agent
 
 - scope: full repo skeleton — `src/ingest/` (SEC client, chunker,
@@ -143,3 +100,46 @@ Each entry has the shape:
   - validate_tools — tool registry validated
   - validate_policies — six policies validated
   - pytest + evals — untouched; existing gates remain green
+
+## 2026-10-18 — bbca7acd9cc8ec33fd491cb759fdf701d4637dad citation filing identity
+
+- scope: Require a citation's CIK, accession, and section to match its retrieved
+  chunk before accepting span evidence. Add separate negative cases for each
+  identity field and document the evidence boundary.
+- proof:
+  - pytest — full fresh-default suite and three identity mismatch regressions
+  - evals — all offline suites pass; prompts, models, and ranking are unchanged
+  - GitHub CI — seven checks pass on the scoped source commit above in PR #12
+
+## 2026-10-19 — 4b25326fe85c11078970a1bde23ae0a8569a168b bounded live evidence ordering
+
+- scope: Replace unrestricted live answer prose with a complete permutation of
+  verified citation labels. Render source spans locally and show distinct accepted,
+  rejected, and failed live states. Resolve keys for the selected provider and keep
+  dotenv loading behind the existing local-mode gate. Provider, model, and retrieval
+  defaults are unchanged.
+- proof:
+  - pytest — 141 passed, 1 skipped; 88.73% coverage
+  - tests/test_live_evidence_order.py — forged claims, invalid labels and output,
+    missing evidence, valid complete ordering, safe provider failure, and refusal
+  - tests/test_config.py — provider-aware fake keys and local dotenv boundary
+  - tests/test_app_generation_status.py — visible accepted, rejected, and failed modes
+  - reports/live-evidence-order-baseline.json and reports/live-evidence-order-variant.json
+    — all five deterministic suite scores unchanged; synthetic provider checks only
+  - native governance gates and changed-file Ruff — pass on the scoped source commit
+- limits: The paired reports contain no live provider requests. OpenAI live API
+  behavior is untested; its local credential resolver uses fake-key regressions.
+
+## 2026-10-19 — 98aa0e160fea824658a638d2aa3f6df750790d97 refresh answer behavior across deployments
+
+- scope: Cache the expensive retrieval ranker and construct the current answer
+  agent for each run. Streamlit previously kept the pre-deployment agent object
+  after the new UI loaded, causing missing generation metadata and retaining old
+  answer behavior.
+- proof:
+  - tests/test_app_agent_cache.py — class-change regression fails before the repair;
+    the repaired factory returns the current agent and reuses the same ranker
+  - pytest — 142 passed, 1 skipped; 88.73% coverage
+  - native governance gates and changed-file Ruff — pass
+- limits: This regression simulates a hot deployment without a provider request.
+  Hosted credentialed acceptance is recorded separately by the release operator.
