@@ -12,6 +12,8 @@ decision: |
   Distinguish accepted ordering, rejected output, and provider failure in answer
   metadata and the UI. Resolve session keys for the explicitly selected provider.
   Keep model-configuration dotenv loading behind the existing local-mode gate.
+  Cache retrieval resources only; construct the current answer agent on each run
+  so a deployment cannot retain old generation behavior or answer metadata.
 alternatives:
   - label: check only that generated prose contains known citation labels
     rejected_because: |
@@ -32,6 +34,8 @@ evidence:
     ref: tests/test_live_evidence_order.py
   - kind: test
     ref: tests/test_config.py
+  - kind: test
+    ref: tests/test_app_agent_cache.py
   - kind: doc
     ref: reports/live-evidence-order-baseline.json
   - kind: doc
