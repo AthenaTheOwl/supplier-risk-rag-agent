@@ -143,3 +143,35 @@ Each entry has the shape:
   - native governance gates and changed-file Ruff — pass
 - limits: This regression simulates a hot deployment without a provider request.
   Hosted credentialed acceptance is recorded separately by the release operator.
+
+## 2026-10-19 — bbca7acd9cc8ec33fd491cb759fdf701d4637dad citation filing identity: paired eval correction
+
+- scope: The entry above landed without the paired eval report that the
+  eval-suite-required-before-prompt-change policy requires for `src/retrieval/`.
+  The report is now recorded retroactively. The entry and the shipped code are unchanged.
+- proof:
+  - reports/citation-filing-identity-baseline.json and
+    reports/citation-filing-identity-variant.json — five offline suites at 30ee792
+    and 1f66c83; runner metrics byte-identical at 30ee792, bbca7ac, 1f66c83 and b84572d
+
+## 2026-10-19 — fefb66a001ded126e15e1fe052b46546c3f170b3 accept one fenced JSON live order
+
+- scope: Strip one ```json or ``` fence that wraps the whole live reply before the
+  existing citation_labels permutation checks. Prose around the fence, a second
+  fence, multiple objects, and malformed JSON are still rejected.
+- proof:
+  - tests/test_live_evidence_order.py — fenced and padded replies accepted;
+    prose-wrapped and malformed fenced replies rejected
+  - reports/live-fence-cli-env-baseline.json and reports/live-fence-cli-env-variant.json
+    — five offline suite scores unchanged; synthetic provider cases only
+- limits: No live provider request was made.
+
+## 2026-10-19 — 6146401c7e56844b5afca58be1edecb24f17d16a eval runner reads .env model settings
+
+- scope: Add `get_cli_model_config`, which loads `.env` like `get_cli_keys`, and use
+  it in `src/evals/runner.py`. `get_model_config` keeps the `STREAMLIT_LOCAL=1`
+  gate for the Streamlit app.
+- proof:
+  - tests/test_config.py — Streamlit path ignores `.env` without the gate; the CLI
+    helper reads it; the runner records the `.env` provider in its Run record
+  - pytest — 162 passed; 89.09% coverage
