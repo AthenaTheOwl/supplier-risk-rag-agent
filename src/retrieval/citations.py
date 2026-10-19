@@ -74,6 +74,12 @@ def verify_citations(
             raise CitationVerificationError(
                 f"Citation {citation.label} points to a chunk that was not retrieved."
             )
+        if (citation.cik, citation.accession, citation.section) != (
+            chunk.cik, chunk.accession, chunk.section
+        ):
+            raise CitationVerificationError(
+                f"Citation {citation.label} filing identity does not match the retrieved chunk."
+            )
         start, end = citation.span_offsets
         if start < 0 or end > len(chunk.text) or start >= end:
             raise CitationVerificationError(f"Citation {citation.label} has invalid offsets.")

@@ -18,6 +18,16 @@ Each entry has the shape:
 
 ## Entries
 
+## 2026-10-18 — bbca7acd9cc8ec33fd491cb759fdf701d4637dad citation filing identity
+
+- scope: Require a citation's CIK, accession, and section to match its retrieved
+  chunk before accepting span evidence. Add separate negative cases for each
+  identity field and document the evidence boundary.
+- proof:
+  - pytest — full fresh-default suite and three identity mismatch regressions
+  - evals — all offline suites pass; prompts, models, and ranking are unchanged
+  - GitHub CI — seven checks pass on the scoped source commit above in PR #12
+
 ## 2026-04-29 — 70f3253 Initial supplier risk RAG agent
 
 - scope: full repo skeleton — `src/ingest/` (SEC client, chunker,
