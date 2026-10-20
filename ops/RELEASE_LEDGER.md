@@ -146,8 +146,9 @@ Each entry has the shape:
 
 ## 2026-10-19 — bbca7acd9cc8ec33fd491cb759fdf701d4637dad citation filing identity: paired eval correction
 
-- scope: The entry above landed without the paired eval report that the
-  eval-suite-required-before-prompt-change policy requires for `src/retrieval/`.
+- scope: The 2026-10-18 bbca7ac citation filing identity entry landed without
+  the paired eval report that the eval-suite-required-before-prompt-change
+  policy requires for `src/retrieval/`.
   The report is now recorded retroactively. The entry and the shipped code are unchanged.
 - proof:
   - reports/citation-filing-identity-baseline.json and
@@ -175,3 +176,27 @@ Each entry has the shape:
   - tests/test_config.py — Streamlit path ignores `.env` without the gate; the CLI
     helper reads it; the runner records the `.env` provider in its Run record
   - pytest — 162 passed; 89.09% coverage
+
+## 2026-10-19 — 261cb54bb5b3eaf3ce4cacfa61b3b4748d773260 rebuild cached ranker after Streamlit module reload
+
+- scope: `load_agent` in `app.py` clears and rebuilds the cached `HybridRanker`
+  when its class is not the current one. After 98aa0e1, a Streamlit source
+  reload paired a fresh `SupplierRiskAgent` with a ranker built by the evicted
+  modules, and every query raised `TypeError` until the app restarted.
+- proof:
+  - tests/test_app_agent_cache.py::test_ranker_built_by_reloaded_modules_is_rebuilt
+    — fails with the 261cb54^ `app.py`, passes with the fix
+- limits: Simulated reload only; no hosted deployment was exercised.
+
+## 2026-10-20 — 98aa0e160fea824658a638d2aa3f6df750790d97 refresh answer behavior across deployments: hosted acceptance correction
+
+- scope: The 98aa0e1 entry says hosted credentialed acceptance is recorded
+  separately by the release operator. No such record exists in this repo for
+  98aa0e1 or 4b25326; the PR #14 body says only that it "will be repeated after
+  this deployment". The reload `TypeError` that 98aa0e1 introduced was fixed in
+  261cb54. The 98aa0e1 entry is unchanged.
+- proof:
+  - `git grep -niE 'credentialed|hosted acceptance|release operator'` found only
+    the 98aa0e1 entry and DEC-CIT-005's full_adoption step before this entry
+- limits: A credentialed hosted smoke is still outstanding (DEC-CIT-005
+  full_adoption).
