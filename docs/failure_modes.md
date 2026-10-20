@@ -16,8 +16,9 @@
    only return an order for the verified citation labels; every displayed claim
    is rendered locally from its source span (DEC-CIT-005). The provider can
    still put weaker evidence first, and any reply other than one JSON object,
-   bare or inside a single ```json fence, is rejected and the app falls back to
-   the deterministic order. A live ordering eval would measure both effects.
+   bare or inside a single ``` or ```json fence that wraps the whole reply, is
+   rejected and the app falls back to the deterministic order. A live ordering
+   eval would measure both effects.
 
 5. **EDGAR filing sections vary by issuer.** The chunker preserves provided
    section labels but does not yet robustly detect every filing's internal Item
