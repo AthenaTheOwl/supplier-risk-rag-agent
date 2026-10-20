@@ -5,6 +5,7 @@ import sys
 BOM = b"\xef\xbb\xbf"
 SCANNED_EXTS = {".md", ".yaml", ".yml", ".json", ".astro", ".tsx", ".ts", ".js", ".mjs", ".py"}
 SKIP_DIRS = {
+    ".codex-pytest-temp",
     ".git",
     ".gstack",
     ".next",

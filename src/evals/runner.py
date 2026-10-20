@@ -13,7 +13,7 @@ from rich.console import Console
 from rich.table import Table
 
 from src.agent.answerer import SupplierRiskAgent
-from src.config import get_model_config
+from src.config import get_cli_model_config
 from src.evals.abstention import evaluate_abstention
 from src.evals.citation_faithfulness import evaluate_citations
 from src.evals.regression import evaluate_regression
@@ -185,7 +185,7 @@ def _record_suite_run(
     prompts_dir = _repo_root() / "src" / "agent" / "prompts"
     extraction, answer_p, refusal_p = load_prompt_files(prompts_dir)
 
-    model_config = get_model_config()
+    model_config = get_cli_model_config()
     retrieval_config = _retrieval_config_snapshot(args)
     reranker_config = _reranker_config_snapshot(args)
     embedding_model = "hashing"  # DEC-RET-002 default

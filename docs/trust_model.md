@@ -15,6 +15,9 @@ the repo.
 
 Local `.env` fallback is allowed only when `STREAMLIT_LOCAL=1`. This path exists
 for developer convenience and is not relied on for deployed Streamlit behavior.
+Local CLI jobs read `.env` without this gate: the eval runner through
+`get_cli_model_config` and EDGAR ingest through `sec_user_agent`, both in
+`src/config.py`. The Streamlit app calls neither.
 
 ## Logging and telemetry
 

@@ -26,7 +26,13 @@ def load_ranker(use_reranker: bool = False) -> HybridRanker:
 
 def load_agent(use_reranker: bool = False) -> SupplierRiskAgent:
     # Cache expensive retrieval resources, not answer behavior across deployments.
-    return SupplierRiskAgent(load_ranker(use_reranker=use_reranker))
+    ranker = load_ranker(use_reranker=use_reranker)
+    if not isinstance(ranker, HybridRanker):
+        # A redeploy reloads project modules but keeps cached resources. A ranker built by
+        # the previous modules returns chunks the current citation verifier rejects.
+        load_ranker.clear()
+        ranker = load_ranker(use_reranker=use_reranker)
+    return SupplierRiskAgent(ranker)
 
 
 def sidebar_keys() -> None:

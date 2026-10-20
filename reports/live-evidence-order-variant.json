@@ -91,6 +91,7 @@
     "Synthetic provider responses establish boundary behavior, not live model quality.",
     "OpenAI live API was not tested; only provider-aware key resolution has fake-key regressions."
   ],
+  "source_sha256_basis": "4b25326 working-tree files with CRLF line endings; LF checkouts and git blobs hash differently, and all three files changed again after 4b25326 (app.py in 98aa0e1 and 261cb54, src/agent/answerer.py in fefb66a, src/config.py in 6146401).",
   "source_sha256": {
     "src/agent/answerer.py": "b176312e846a524adc43540a832214de4321837c15648929568b33f1ef1bc261",
     "src/config.py": "aa7c44400427cb21340f5506dca9f1245c5e786c7565421bd6ea0c1f44dcb1ef",

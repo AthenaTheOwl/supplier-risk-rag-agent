@@ -30,6 +30,10 @@ vars from user input.
 Defines `Keys`, `ModelConfig`, `MissingKeyError`, `get_keys`, and
 `get_model_config`. Reads `.env` only when `STREAMLIT_LOCAL=1` is
 set. Accepts `st.session_state` as a key source for the BYOK flow.
+The gate covers the Streamlit path (`get_keys`, `get_model_config`);
+the CLI helpers `get_cli_keys`, `get_cli_model_config` and
+`sec_user_agent` read `.env` directly and the app calls none of them
+(DEC-CIT-005-amendment-fenced-json-and-cli-dotenv).
 
 ### `docs/trust_model.md`
 

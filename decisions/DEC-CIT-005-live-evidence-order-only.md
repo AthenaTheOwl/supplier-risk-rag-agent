@@ -2,6 +2,7 @@
 id: DEC-CIT-005-live-evidence-order-only
 spec: specs/0006-citation-faithfulness/
 requirement: R-CIT-001
+amends: DEC-DEP-002-missing-key-falls-back-to-deterministic-retrieval
 date: 2026-10-19
 status: approved
 reversible: true

@@ -38,12 +38,15 @@ Each citation contains:
 - `span_offsets`
 - `chunk_id`
 
-`verify_citations` rejects citations whose chunk was not retrieved or whose
-offsets do not match the cited text.
+`verify_citations` rejects citations whose chunk was not retrieved, whose CIK,
+accession or section differs from that chunk, or whose offsets do not match the
+cited text.
 
 ## LLM use
 
-The deterministic answerer is the default for tests and evals. A live Claude
-rewrite can be enabled in Streamlit when the visitor supplies an Anthropic key.
-The live rewrite receives only retrieved context and the deterministic cited
-answer; citations remain the verified deterministic spans.
+The deterministic answerer is the default for tests and evals. Live evidence
+ordering can be enabled in Streamlit when the visitor supplies the key for the
+configured provider. The provider returns only a JSON permutation of the
+verified citation labels; local code renders the original spans in that order
+and falls back to the deterministic answer on invalid output or provider failure
+(DEC-CIT-005).

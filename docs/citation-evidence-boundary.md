@@ -11,7 +11,7 @@ passage entails every sentence in an answer, that a filing is current, or that a
 retrieved excerpt is a complete account of the supplier's risk. A verified quote
 should be described at that scope.
 
-For a later AIP evaluation pilot, keep the current deterministic retrieval and
+For a later evaluation experiment, keep the current deterministic retrieval and
 default model configuration fixed. Add matched cases for a correct citation,
 wrong filing identity, unsupported paraphrase and a later contradictory filing.
 Have a checker inspect the retrieved passages and the question before seeing the
@@ -24,7 +24,5 @@ model change still requires the repository's paired evaluation records and must
 not be inferred from a stronger test fixture alone.
 
 The reviewer experiment is motivated by
-[Audit Without Verification](https://arxiv.org/abs/2609.07680), while
-[AI Product Team's evaluation workflow](https://github.com/3orionkings/ai-product-team/blob/main/workflows/evaluate-feature.md)
-offers a way to freeze criteria and keep failure slices visible. No private brief
+[Audit Without Verification](https://arxiv.org/abs/2609.07680). No private brief
 content, live filing fetch, API call, prompt change or deployment is included.
