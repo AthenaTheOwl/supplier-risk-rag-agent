@@ -44,7 +44,7 @@
     }
   },
   "scores_unchanged": true,
-  "comparison": "python -m src.evals.runner --suite all --no-emit-evidence --json wrote byte-identical metrics at the base commit, at source commit bbca7ac, at the PR #12 merge 1f66c83, and at main tip b84572dc8682169cce453381acd9e2f5fd082b2b.",
+  "comparison": "python -m src.evals.runner --suite all --no-emit-evidence --json <out.json> wrote byte-identical metrics at the base commit, at source commit bbca7ac, at the PR #12 merge 1f66c83, and at main tip b84572dc8682169cce453381acd9e2f5fd082b2b.",
   "limits": [
     "Recorded retroactively on 2026-10-19; PR #12 merged without a paired eval report.",
     "Offline deterministic suites only; no provider requests and no live EDGAR fetch.",
